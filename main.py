@@ -1,11 +1,14 @@
+import pygame
 import sys
 
-import painter
+import game_loop
 
 
 def main():
-  p = painter.Painter()
-  p.demo()
+  pygame.init()
+  pygame.display.set_caption('Mario Clone')
+
+  game_loop.demo()
 
 
 if __name__ == '__main__':
