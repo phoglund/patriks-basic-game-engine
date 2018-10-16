@@ -10,8 +10,10 @@ def demo():
 
   game = simulation.Simulation(screen, size)
 
+  black = pygame.Color(0, 0, 0)
   running = True
   while running:
+    screen.fill(black)
     dt = clock.tick(30)
     game.advance(dt / 30.0)
     pygame.display.flip()

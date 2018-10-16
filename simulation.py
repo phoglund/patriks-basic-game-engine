@@ -9,14 +9,14 @@ class Obstacle(object):
     self._color = color
 
   def draw_to(self, screen, viewpoint_pos_x):
-    translated = self._rect.move(viewpoint_pos_x, 0)
+    translated = self._rect.move(-viewpoint_pos_x, 0)
     pygame.draw.rect(screen, self._color, translated)
 
 
 def random_obstacle(bounds):
   x_end, y_end = bounds
   size = 40
-  x = random.randint(0, x_end)
+  x = random.randint(0, 5 * x_end)
   y = random.randint(0, y_end - size)
 
   rect = pygame.Rect(x, y, size, size)
@@ -39,8 +39,6 @@ class Simulation(object):
     self._viewpoint_pos_x += self._viewpoint_x_speed * fraction
     self._draw_ground()
     self._draw_obstacles(self._viewpoint_pos_x)
-
-    pygame.display.flip()
 
   def _draw_ground(self):
     ground_color = pygame.Color(255, 128, 255)
