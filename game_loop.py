@@ -3,6 +3,10 @@ import pygame
 import simulation
 
 
+TARGET_FPS = 30.0
+COLOR_BLACK = pygame.Color(0, 0, 0)
+
+
 def demo():
   size = (640, 480)
   screen = pygame.display.set_mode(size)
@@ -10,13 +14,13 @@ def demo():
 
   game = simulation.Simulation(screen, size)
 
-  black = pygame.Color(0, 0, 0)
   running = True
   while running:
-    screen.fill(black)
-    dt = clock.tick(30)
-    game.advance(dt / 30.0)
+    screen.fill(COLOR_BLACK)
+    dt = clock.tick(TARGET_FPS)
+    game.advance(dt / TARGET_FPS)
     pygame.display.flip()
+
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         running = False

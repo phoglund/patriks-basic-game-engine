@@ -10,16 +10,18 @@ class Simulation(object):
     self._screen = screen
     self._size = size
     self._viewpoint_pos_x = 0.0
-    self._viewpoint_x_speed = 5.0
     self._obstacles = [obstacles.random_obstacle(size)
                        for _ in xrange(20)]
 
   def advance(self, time_fraction):
+    self._move_player(time_fraction)
+    self._draw_ground()
+    self._draw_obstacles(self._viewpoint_pos_x)
+
+  def _move_player(self, time_fraction):
     speed = self._player_speed()
 
     self._viewpoint_pos_x += speed * time_fraction
-    self._draw_ground()
-    self._draw_obstacles(self._viewpoint_pos_x)
 
   def _player_speed(self):
     pressed = pygame.key.get_pressed()
@@ -29,9 +31,9 @@ class Simulation(object):
       # Don't move in this case.
       return 0
     elif moving_left:
-      return -self._viewpoint_x_speed
+      return -5
     elif moving_right:
-      return self._viewpoint_x_speed
+      return 5
     else:
       return 0
 
