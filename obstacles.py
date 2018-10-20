@@ -8,7 +8,8 @@ class Box(object):
     self._rect = rect
     self._color = color
 
-  def draw_to(self, screen, viewpoint_pos_x):
+  def draw(self, screen, viewpoint_pos):
+    viewpoint_pos_x, _ = viewpoint_pos
     translated = self._rect.move(-viewpoint_pos_x, 0)
     pygame.draw.rect(screen, self._color, translated)
 
