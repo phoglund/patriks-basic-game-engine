@@ -9,19 +9,29 @@ class Simulation(object):
   def __init__(self, screen, size):
     self._screen = screen
     self._size = size
-    self._viewpoint_pos_x = 0.0
+    self._viewpoint_pos = [0.0, 0.0]
+    self._player_pos = [0.0, 0.0]
     self._obstacles = [obstacles.random_obstacle(size)
                        for _ in xrange(20)]
 
   def advance(self, time_fraction):
     self._move_player(time_fraction)
+    self._move_viewpoint(time_fraction)
+    self._draw_player()
     self._draw_ground()
-    self._draw_obstacles(self._viewpoint_pos_x)
+    self._draw_obstacles()
 
   def _move_player(self, time_fraction):
     speed = self._player_speed()
 
-    self._viewpoint_pos_x += speed * time_fraction
+    self._player_pos[0] += speed * time_fraction
+
+  def _move_viewpoint(self, time_fraction):
+    # Just center on player for now.
+    self._viewpoint_pos[0] = self._player_pos[0] - self._size[0] / 2
+
+  def _draw_player(self):
+    pass
 
   def _player_speed(self):
     pressed = pygame.key.get_pressed()
@@ -44,6 +54,7 @@ class Simulation(object):
     pygame.draw.line(self._screen, ground_color,
                      (0, ground_y), (x_end, ground_y), 5)
 
-  def _draw_obstacles(self, viewpoint_pos_x):
+  def _draw_obstacles(self):
+    viewpoint_x = int(self._viewpoint_pos[0])
     for obstacle in self._obstacles:
-      obstacle.draw_to(self._screen, int(viewpoint_pos_x))
+      obstacle.draw_to(self._screen, viewpoint_x)
