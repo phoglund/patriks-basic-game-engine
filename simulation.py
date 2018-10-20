@@ -35,6 +35,7 @@ class Simulation(object):
 
     # Interpret _player_pos as the center of the player's body.
     x, y = self._player_pos
+    x -= self._viewpoint_pos[0]
 
     rect = pygame.Rect(x - size / 2, y - size / 2, size, size)
     color = pygame.Color(255, 0, 128)
