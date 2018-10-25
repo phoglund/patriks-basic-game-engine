@@ -1,6 +1,5 @@
 import pygame
 
-import position
 import simulation
 
 
@@ -9,11 +8,11 @@ COLOR_BLACK = pygame.Color(0, 0, 0)
 
 
 def demo():
-  size = position.make(640, 480)
+  size = (640, 480)
   screen = pygame.display.set_mode(size)
   clock = pygame.time.Clock()
 
-  game = simulation.Simulation(screen, size)
+  game = simulation.Simulation(screen, pygame.math.Vector2(size))
 
   running = True
   while running:

@@ -2,19 +2,18 @@ import pygame
 import random
 
 import player
-import position
 import obstacles
 
 
 class Simulation(object):
 
-  def __init__(self, screen, size: position.Position):
+  def __init__(self, screen, size: pygame.math.Vector2):
     self._screen = screen
     self._size = size
-    self._viewpoint_pos = position.make(0.0, 0.0)
+    self._viewpoint_pos = pygame.math.Vector2(0.0, 0.0)
     self._obstacles = [obstacles.random_obstacle(size)
                        for _ in range(20)]
-    start_pos = position.make(0.0, size.y - 35)
+    start_pos = pygame.math.Vector2(0.0, size.y - 35)
     self._player = player.Player(start_pos=start_pos)
 
   def advance(self, time_fraction):

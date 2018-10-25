@@ -1,15 +1,13 @@
 import pygame
 
-import position
-
 
 class Player(object):
 
-  def __init__(self, start_pos: position.Position):
+  def __init__(self, start_pos: pygame.math.Vector2):
     self._position = start_pos
 
   @property
-  def at(self) -> position.Position:
+  def at(self) -> pygame.math.Vector2:
     return self._position
 
   def move(self, time_fraction: float):
@@ -17,7 +15,7 @@ class Player(object):
 
     self._position[0] += speed * time_fraction
 
-  def draw(self, screen, viewpoint_pos: position.Position):
+  def draw(self, screen, viewpoint_pos: pygame.math.Vector2):
     size = 20
 
     # Interpret _position as the center of the player's body.
