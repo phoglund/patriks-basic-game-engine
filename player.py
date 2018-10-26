@@ -1,5 +1,7 @@
 import pygame
 
+import jump
+
 
 class Player(object):
 
@@ -8,7 +10,7 @@ class Player(object):
   def __init__(self, start_pos: pygame.math.Vector2):
     self._position = start_pos
     self._ground_y = start_pos.y  # TODO: proper ground collision detection.
-    self._current_jump = NullJump()
+    self._current_jump = jump.NullJump()
     self._draw_bounding_rect = True
 
   @property
@@ -31,7 +33,7 @@ class Player(object):
     if self._position.y > self._ground_y:
       # Don't let the player fall under the ground.
       self._position.y = self._ground_y
-      self._current_jump = NullJump()
+      self._current_jump = jump.NullJump()
 
   def draw(self, screen, viewpoint_pos: pygame.math.Vector2):
     # Interpret _position as the center of the player's body.
@@ -65,46 +67,8 @@ class Player(object):
 
     jumping = pressed[pygame.K_SPACE]
     if jumping and self._current_jump.done():
-      self._current_jump = Jump(pygame.math.Vector2(x, -5))
+      self._current_jump = jump.Jump(pygame.math.Vector2(x, -5))
     self._current_jump.update()
     y = self._current_jump.y
 
     return pygame.math.Vector2(x, y)
-
-
-class Jump(object):
-  """Contains the state of an ongoing jump."""
-
-  # This is a very simple approximation of gravity: instead of modeling
-  # acceleration, we just interpolate the player delta-y to go down over
-  # time.
-  GRAVITY = pygame.math.Vector2(0, 5)
-
-  def __init__(self, initial_speed):
-    self._current_speed = initial_speed
-    self._progress = 0.0
-
-  def done(self):
-    return self._progress >= 1.0
-
-  def update(self):
-    self._progress += 0.01
-    self._current_speed = self._current_speed.lerp(
-        Jump.GRAVITY, self._progress)
-
-  @property
-  def y(self):
-    return self._current_speed.y
-
-
-class NullJump(object):
-
-  def done(self):
-    return True
-
-  def update(self):
-    pass
-
-  @property
-  def y(self):
-    return 0

@@ -1,2 +1,8 @@
 # Requirements:
 $ pip3 install pygame
+
+# Running game:
+$ python3 main.py
+
+# Running unittests:
+$ python3 -m unittest discover -p "*unittest.py"
