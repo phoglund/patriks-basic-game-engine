@@ -9,6 +9,7 @@ class Player(object):
 
   def __init__(self, start_pos: pygame.math.Vector2):
     self._position = start_pos
+    self._speed = pygame.math.Vector2(0, 0)
     self._ground_y = start_pos.y  # TODO: proper ground collision detection.
     self._current_jump = jump.NullJump()
     self._draw_bounding_rect = True
@@ -27,13 +28,38 @@ class Player(object):
                        size, size * 2 + head_size / 2)
 
   def move(self, time_fraction: float):
-    speed = self._player_speed()
+    self._speed = self._player_speed()
 
-    self._position += speed * time_fraction
+    self._position += self._speed * time_fraction
     if self._position.y > self._ground_y:
       # Don't let the player fall under the ground.
       self._position.y = self._ground_y
       self._current_jump = jump.NullJump()
+
+  def collision_adjust(self, obstacle):
+    them = obstacle.bounding_rect
+    us = self.bounding_rect
+
+    if not them.colliderect(us):
+      return
+
+    # Adjust back our position depending on which direction we were going in.
+    def adjust_x():
+      # if us.bottom >= them.top or us.top <= them.bottom:
+      #   return False  # Above or below the obstacle, don't collide x
+      if self._speed.x > 0:
+        self._position.x = them.left - us.width / 2
+        return True
+      elif self._speed.x < 0:
+        self._position.x = them.right + us.width / 2
+        return True
+
+    if adjust_x():
+      return
+    if self._speed.y > 0:
+      self._position.y = them.top - us.height / 2
+    elif self._speed.y < 0:
+      self._position.y = them.bottom + us.height / 2
 
   def draw(self, screen, viewpoint_pos: pygame.math.Vector2):
     # Interpret _position as the center of the player's body.
@@ -67,7 +93,7 @@ class Player(object):
 
     jumping = pressed[pygame.K_SPACE]
     if jumping and self._current_jump.done():
-      self._current_jump = jump.Jump(pygame.math.Vector2(x, -5))
+      self._current_jump = jump.Jump(pygame.math.Vector2(x, -20))
     self._current_jump.update()
     y = self._current_jump.y
 

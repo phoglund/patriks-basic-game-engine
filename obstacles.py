@@ -13,6 +13,10 @@ class Box(object):
     translated = self._rect.move(-viewpoint_pos_x, 0)
     pygame.draw.rect(screen, self._color, translated)
 
+  @property
+  def bounding_rect(self):
+    return self._rect
+
 
 def random_obstacle(bounds):
   x_end, y_end = bounds

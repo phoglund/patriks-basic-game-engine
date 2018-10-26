@@ -14,10 +14,13 @@ class Jump(object):
     self._progress = 0.0
 
   def done(self):
-    return self._progress >= 1.0
+    return self._progress == 1.0
 
   def update(self):
     self._progress += 0.01
+    if self._progress > 1.0:
+      self._progress = 1.0
+
     self._current_speed = self._current_speed.lerp(
         Jump.GRAVITY, self._progress)
 
