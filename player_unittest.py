@@ -16,7 +16,7 @@ class PlayerTest(unittest.TestCase):
 
   @mock.patch('pygame.key.get_pressed')
   def test_player_moves_left_if_keyleft_pressed(self, get_pressed):
-    get_pressed
+    pass
 
 
 # Initialize pygame once.
