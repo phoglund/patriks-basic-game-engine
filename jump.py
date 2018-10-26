@@ -1,13 +1,13 @@
 import pygame
 
+# This is a very simple approximation of gravity: instead of modeling
+# acceleration, we just interpolate the player delta-y to go down over
+# time.
+GRAVITY = pygame.math.Vector2(0, 5)
+
 
 class Jump(object):
   """Contains the state of an ongoing jump."""
-
-  # This is a very simple approximation of gravity: instead of modeling
-  # acceleration, we just interpolate the player delta-y to go down over
-  # time.
-  GRAVITY = pygame.math.Vector2(0, 5)
 
   def __init__(self, initial_speed):
     self._current_speed = initial_speed
@@ -21,8 +21,7 @@ class Jump(object):
     if self._progress > 1.0:
       self._progress = 1.0
 
-    self._current_speed = self._current_speed.lerp(
-        Jump.GRAVITY, self._progress)
+    self._current_speed = self._current_speed.lerp(GRAVITY, self._progress)
 
   @property
   def y(self):
@@ -39,4 +38,4 @@ class NullJump(object):
 
   @property
   def y(self):
-    return 0
+    return GRAVITY.y

@@ -36,7 +36,7 @@ class Player(object):
     x, y = self._position
     return pygame.Rect(x - width / 2, y - height / 2, width, height)
 
-  def move(self, time_fraction: float):
+  def move(self, time_fraction: float=1.0):
     self._speed = self._player_speed()
 
     self._position += self._speed * time_fraction
@@ -66,7 +66,7 @@ class Player(object):
     if adjust_x():
       return
     if self._speed.y > 0:
-      print(them, us)
+      # print(them, us)
       us.bottom = them.top
       self._position.y = us.centery
     elif self._speed.y < 0:

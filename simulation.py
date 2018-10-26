@@ -18,11 +18,9 @@ class Simulation(object):
 
   def advance(self, time_fraction):
     self._player.move(time_fraction)
-    print("b", self._player.bounding_rect, self._player._speed, flush=True)
     for obstacle in self._obstacles:
       self._player.collision_adjust(obstacle)
     self._move_viewpoint(self._player.at)
-    print("a", self._player.bounding_rect, self._player._speed, flush=True)
     self._player.draw(self._screen, self._viewpoint_pos)
     self._draw_ground()
     for obstacle in self._obstacles:
