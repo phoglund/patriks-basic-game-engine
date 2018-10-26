@@ -19,7 +19,7 @@ class Player(object):
 
   @property
   def bounding_rect(self):
-        # See draw(). The player is a rect with a circle on top.
+    # See draw(). The player is a rect with a circle on top.
     size = Player.SIZE
     head_size = 10
     x, y = self._position
