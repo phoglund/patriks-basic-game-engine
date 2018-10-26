@@ -122,13 +122,15 @@ class PlayerTest(unittest.TestCase):
 
     self.assertEqual(p.at, (0, 0))
 
-  @mock.patch('pygame.key.get_pressed')
-  def test_collision_adjust_land_on_top_of_obstacle(self, get_pressed):
+  def test_collision_adjust_land_on_top_of_obstacle(self):
     # Spawn in the air slightly above the obstacle.
-    p = make_player((0, 390))
+    # TODO: hack air spawn until proper ground collision implemented.
+    p = make_player((0, 500))
+    p._on_solid_ground = False
+    p.at.y = 350
     o = make_obstacle(0, 400)
 
-    for _ in range(100):
+    for _ in range(200):
       p.move()
       p.collision_adjust(o)
 
@@ -145,7 +147,7 @@ class PlayerTest(unittest.TestCase):
     get_pressed.return_value = keys([pygame.K_LEFT])
     p.move()
 
-    self.assertEqual(p.bounding_rect.bottom, 400)
+    self.assertEqual(p.bounding_rect.bottom, 420)
     self.assertLess(p.at.x, 0)
 
 # Initialize pygame once.

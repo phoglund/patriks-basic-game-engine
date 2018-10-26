@@ -23,6 +23,7 @@ class Player(object):
     self._ground_y = start_pos.y  # TODO: proper ground collision detection.
     self._current_jump = jump.NullJump()
     self._draw_bounding_rect = True
+    self._on_solid_ground = True
 
   @property
   def at(self) -> pygame.math.Vector2:
@@ -37,41 +38,44 @@ class Player(object):
     return pygame.Rect(x - width / 2, y - height / 2, width, height)
 
   def move(self, time_fraction: float=1.0):
-    self._speed = self._player_speed()
+    self._speed = self._player_speed() * time_fraction
 
-    self._position += self._speed * time_fraction
+    self._position += self._speed
     if self._position.y > self._ground_y:
       # Don't let the player fall under the ground.
       self._position.y = self._ground_y
       self._current_jump = jump.NullJump()
+      self._on_solid_ground = True
 
   def collision_adjust(self, obstacle):
     them = obstacle.bounding_rect
-    us = self.bounding_rect
 
-    if not them.colliderect(us):
+    if not them.colliderect(self.bounding_rect):
       return
 
-    # Adjust back our position depending on which direction we were going in.
-    def adjust_x():
-      # if us.bottom >= them.top or us.top <= them.bottom:
-      #   return False  # Above or below the obstacle, don't collide x
-      if self._speed.x > 0:
-        self._position.x = them.left - us.width / 2
-        return True
-      elif self._speed.x < 0:
-        self._position.x = them.right + us.width / 2
-        return True
+    self._current_jump = jump.NullJump()
 
-    if adjust_x():
-      return
-    if self._speed.y > 0:
-      # print(them, us)
-      us.bottom = them.top
-      self._position.y = us.centery
-    elif self._speed.y < 0:
-      us.top = them.bottom
-      self._position.y = us.centery
+    # Reverse time until we no longer collide.
+    fraction_undone = 0.0
+    while them.colliderect(self.bounding_rect) and fraction_undone < 1.0:
+      self._position -= self._speed * 0.1
+      fraction_undone += 0.1
+
+    # Then, try moving forward each axis as much as possible.
+    # We can only hit a side or top of the rect at a time, so don't
+    # block movement in the other direction.
+    self._position.x += self._speed.x
+    if them.colliderect(self.bounding_rect):
+      self._position.x -= self._speed.x
+    self._position.y += self._speed.y
+    if them.colliderect(self.bounding_rect):
+      self._position.y -= self._speed.y
+      self._on_solid_ground = True
+    else:
+      self._on_solid_ground = False
+
+    if fraction_undone >= 1.0:
+      print("collision algorithm is confused", flush=True)
 
   def draw(self, screen, viewpoint_pos: pygame.math.Vector2):
     # Interpret _position as the center of the player's bounding rect.
@@ -107,9 +111,10 @@ class Player(object):
     elif moving_right:
       x = 5
 
-    jumping = pressed[pygame.K_SPACE]
-    if jumping and self._current_jump.done():
+    wants_to_jump = pressed[pygame.K_SPACE]
+    if wants_to_jump and self._on_solid_ground:
       self._current_jump = jump.Jump(pygame.math.Vector2(x, -20))
+      self._on_solid_ground = False
     self._current_jump.update()
     y = self._current_jump.y
 
