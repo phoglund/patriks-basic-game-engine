@@ -13,14 +13,16 @@ class Simulation(object):
     self._viewpoint_pos = pygame.math.Vector2(0.0, 0.0)
     self._obstacles = [obstacles.random_obstacle(size)
                        for _ in range(20)]
-    start_pos = pygame.math.Vector2(0.0, size.y - 35)
+    start_pos = pygame.math.Vector2(0.0, size.y - 40)
     self._player = player.Player(start_pos=start_pos)
 
   def advance(self, time_fraction):
     self._player.move(time_fraction)
+    print("b", self._player.bounding_rect, self._player._speed, flush=True)
     for obstacle in self._obstacles:
       self._player.collision_adjust(obstacle)
     self._move_viewpoint(self._player.at)
+    print("a", self._player.bounding_rect, self._player._speed, flush=True)
     self._player.draw(self._screen, self._viewpoint_pos)
     self._draw_ground()
     for obstacle in self._obstacles:

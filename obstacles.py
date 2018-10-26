@@ -11,7 +11,7 @@ class Box(object):
   def draw(self, screen, viewpoint_pos):
     viewpoint_pos_x, _ = viewpoint_pos
     translated = self._rect.move(-viewpoint_pos_x, 0)
-    pygame.draw.rect(screen, self._color, translated)
+    pygame.draw.rect(screen, self._color, translated, 1)
 
   @property
   def bounding_rect(self):

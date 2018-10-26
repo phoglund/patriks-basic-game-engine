@@ -75,7 +75,7 @@ class PlayerTest(unittest.TestCase):
     self.assertEqual(b.centerx, 0)
     # The head stands ~16 pixels above the body, but the bb
     # needs to cover the head too so it's a bit off center.
-    self.assertEqual(b.centery, -8)
+    self.assertEqual(b.centery, 0)
 
   @mock.patch('pygame.key.get_pressed')
   def test_bounding_rect_follows_player(self, get_pressed):
@@ -87,7 +87,7 @@ class PlayerTest(unittest.TestCase):
     b = p.bounding_rect
 
     self.assertEqual(b.centerx, p.at.x)
-    self.assertEqual(b.centery, p.at.y - 8)
+    self.assertEqual(b.centery, p.at.y)
 
 
 # Initialize pygame once.
