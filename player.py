@@ -20,10 +20,9 @@ class Player(object):
   def __init__(self, start_pos: pygame.math.Vector2):
     self._position = start_pos
     self._speed = pygame.math.Vector2(0, 0)
-    self._ground_y = start_pos.y  # TODO: proper ground collision detection.
     self._current_jump = jump.NullJump()
-    self._draw_bounding_rect = True
-    self._on_solid_ground = True
+    self._draw_bounding_rect = False
+    self._on_solid_ground = False
 
   @property
   def at(self) -> pygame.math.Vector2:
@@ -41,19 +40,12 @@ class Player(object):
     self._speed = self._player_speed() * time_fraction
 
     self._position += self._speed
-    if self._position.y > self._ground_y:
-      # Don't let the player fall under the ground.
-      self._position.y = self._ground_y
-      self._current_jump = jump.NullJump()
-      self._on_solid_ground = True
 
   def collision_adjust(self, obstacle):
     them = obstacle.bounding_rect
 
     if not them.colliderect(self.bounding_rect):
       return
-
-    self._current_jump = jump.NullJump()
 
     # Reverse time until we no longer collide.
     fraction_undone = 0.0
@@ -71,10 +63,13 @@ class Player(object):
     if them.colliderect(self.bounding_rect):
       self._position.y -= self._speed.y
       self._on_solid_ground = True
+      self._current_jump = jump.NullJump()
     else:
       self._on_solid_ground = False
 
     if fraction_undone >= 1.0:
+      # TODO: this happens when colliding with several obstacles at once.
+      # Find some way to deal with this.
       print("collision algorithm is confused", flush=True)
 
   def draw(self, screen, viewpoint_pos: pygame.math.Vector2):

@@ -12,6 +12,5 @@ def main():
 
   game_loop.demo()
 
-
 if __name__ == '__main__':
   sys.exit(main())
