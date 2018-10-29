@@ -20,7 +20,7 @@ import game_loop
 
 def main():
   pygame.init()
-  pygame.display.set_caption('Mario Clone')
+  pygame.display.set_caption('Platform Game')
 
   game_loop.demo()
 
