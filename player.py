@@ -16,17 +16,15 @@ import math
 import pygame
 
 import jump
+import world
 
 
 def to_draw_coords(pos, viewpoint_pos):
   # Draw depending on where the viewpoint is.
-  x, y = (pos - viewpoint_pos)
-
-  # Always round the same way to avoid skitting.
-  return pygame.math.Vector2(math.floor(x), math.floor(y))
+  return pos - viewpoint_pos
 
 
-class Player(object):
+class Player(world.Thing):
 
   BODY_SIZE = 20
   HEAD_RADIUS = 10
@@ -56,10 +54,18 @@ class Player(object):
     self._position += self._speed
 
   def collision_adjust(self, obstacle):
-    them = obstacle.bounding_rect
-
-    if not them.colliderect(self.bounding_rect):
+    if not obstacle.bounding_rect.colliderect(self.bounding_rect):
       return
+
+    if obstacle.has_custom_collision:
+      obstacle.apply_custom_collision(player=self, current_speed=self._speed)
+      return
+
+    # Otherwise: apply the normal algorithm.
+    self._back_up_until_not_colliding(obstacle)
+
+  def _back_up_until_not_colliding(self, obstacle):
+    them = obstacle.bounding_rect
 
     # Reverse time until we no longer collide.
     fraction_undone = 0.0
@@ -128,3 +134,7 @@ class Player(object):
     y = self._current_jump.y
 
     return pygame.math.Vector2(x, y)
+
+  def launch_into_air(self, direction):
+    # Doesn't have to be into the air per se, but that's the most common case.
+    self._current_jump = jump.Jump(direction)

@@ -15,8 +15,9 @@
 import pygame
 import random
 
-import player
 import obstacles
+import player
+import trampolines
 
 
 def _generate_level(size, viewpoint_pos):
@@ -24,7 +25,9 @@ def _generate_level(size, viewpoint_pos):
   ground_level = size.y - 20
   ground = obstacles.Ground(
       y=ground_level, initial_viewpoint_pos=viewpoint_pos)
-  return [ground] + some_obstacles
+  some_trampolines = [trampolines.random_trampoline(
+      ground_y=ground_level, bounds=size) for _ in range(2)]
+  return [ground] + some_obstacles + some_trampolines
 
 
 class Simulation(object):
@@ -49,3 +52,4 @@ class Simulation(object):
   def _move_viewpoint(self, player_pos):
     # Just center on player for now.
     self._viewpoint_pos.x = player_pos.x - self._size.x / 2
+    self._viewpoint_pos.y = player_pos.y - self._size.y / 2
