@@ -17,7 +17,7 @@ import pygame
 # This is a very simple approximation of gravity: instead of modeling
 # acceleration, we just interpolate the player delta-y to go down over
 # time.
-GRAVITY = pygame.math.Vector2(0, 10)
+GRAVITY = pygame.math.Vector2(0, 20)
 
 
 class Jump(object):
@@ -28,7 +28,7 @@ class Jump(object):
     self._progress = 0.0
 
   def update(self):
-    self._progress += 0.01
+    self._progress += 0.005
     if self._progress > 1.0:
       self._progress = 1.0
 

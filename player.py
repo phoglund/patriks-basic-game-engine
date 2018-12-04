@@ -59,10 +59,9 @@ class Player(world.Thing):
 
     if obstacle.has_custom_collision:
       obstacle.apply_custom_collision(player=self, current_speed=self._speed)
-      return
-
-    # Otherwise: apply the normal algorithm.
-    self._back_up_until_not_colliding(obstacle)
+    else:
+      # Otherwise: apply the normal algorithm.
+      self._back_up_until_not_colliding(obstacle)
 
   def _back_up_until_not_colliding(self, obstacle):
     them = obstacle.bounding_rect

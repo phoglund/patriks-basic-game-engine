@@ -177,7 +177,7 @@ class PlayerTest(unittest.TestCase):
     p.move()
     p.collision_adjust(o)
 
-    self.assertAlmostEqual(p.bounding_rect.bottom, 420, delta=1)
+    self.assertAlmostEqual(p.bounding_rect.bottom, 418, delta=1)
     self.assertLess(p.at.x, 1)
 
 # Initialize pygame once.

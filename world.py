@@ -13,11 +13,14 @@
 # limitations under the License.
 
 
-class Thing(object):
-  """Something that can be drawn in the game world, and collided with."""
+class Drawable(object):
 
   def draw(self, screen, viewpoint_pos):
     raise NotImplementedError('draw')
+
+
+class Thing(Drawable):
+  """Something that can be drawn in the game world, and collided with."""
 
   @property
   def bounding_rect(self):

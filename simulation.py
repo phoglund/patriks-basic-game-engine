@@ -15,6 +15,7 @@
 import pygame
 import random
 
+import background
 import obstacles
 import player
 import trampolines
@@ -39,8 +40,10 @@ class Simulation(object):
     self._obstacles = _generate_level(size, self._viewpoint_pos)
     start_pos = pygame.math.Vector2(0.0, size.y - 100)
     self._player = player.Player(start_pos=start_pos)
+    self._background = background.load_background()
 
   def advance(self, time_fraction):
+    self._background.draw(self._screen, self._viewpoint_pos)
     self._player.move(time_fraction)
     for obstacle in self._obstacles:
       self._player.collision_adjust(obstacle)
