@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import pygame
 import random
 
@@ -26,7 +27,7 @@ class Box(world.Thing):
 
   def draw(self, screen, viewpoint_pos):
     draw_pos = self._rect.move(-viewpoint_pos)
-    pygame.draw.rect(screen, self._color, draw_pos, 1)
+    pygame.draw.rect(screen, self._color, draw_pos, 0)
 
   @property
   def bounding_rect(self):
@@ -37,22 +38,28 @@ class Ground(world.Thing):
 
   def __init__(self, y, initial_viewpoint_pos):
     # The ground is infinite on the x axis for now.
-    self._pos = pygame.math.Vector2(0, y)
     self._color = pygame.Color(255, 128, 128)
+    self._pos = pygame.math.Vector2(0, y)
+    self._image = None
     self._viewpoint_pos = initial_viewpoint_pos
     self._width = 1000
 
+  def load(self, image_path):
+    loaded_image = pygame.image.load(image_path)
+    self._image = loaded_image.convert()
+
   def draw(self, screen, viewpoint_pos):
+    assert self._image
     self._viewpoint_pos = viewpoint_pos
-    self._width, _ = screen.get_size()
+    self._width = screen.get_width()
     draw_pos = self._pos - viewpoint_pos
-    pygame.draw.line(screen, self._color, (0, draw_pos.y),
-                     (self._width, draw_pos.y), 5)
+    screen.blit(self._image, draw_pos)
 
   @property
   def bounding_rect(self):
     # Move the bounding rect with the viewpoint - the ground is infinite.
-    return pygame.Rect(self._viewpoint_pos.x, self._pos.y, self._width, 30)
+    very_high_height = 10000
+    return pygame.Rect(self._viewpoint_pos.x, self._pos.y, self._width, very_high_height)
 
 
 def random_obstacle(bounds):
@@ -66,3 +73,11 @@ def random_obstacle(bounds):
   color = pygame.Color(grayscale, grayscale, grayscale)
 
   return Box(rect, color)
+
+
+def load_ground(y, initial_viewpoint_pos):
+  this_scripts_dir = os.path.realpath(os.path.dirname(__file__))
+
+  ground = Ground(y, initial_viewpoint_pos)
+  ground.load(os.path.join(this_scripts_dir, 'images', 'snow.jpg'))
+  return ground

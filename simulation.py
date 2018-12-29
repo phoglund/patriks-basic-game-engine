@@ -24,7 +24,7 @@ import trampolines
 def _generate_level(size, viewpoint_pos):
   some_obstacles = [obstacles.random_obstacle(size) for _ in range(20)]
   ground_level = size.y - 20
-  ground = obstacles.Ground(
+  ground = obstacles.load_ground(
       y=ground_level, initial_viewpoint_pos=viewpoint_pos)
   some_trampolines = [trampolines.random_trampoline(
       ground_y=ground_level, bounds=size) for _ in range(2)]
@@ -38,7 +38,7 @@ class Simulation(object):
     self._size = size
     self._viewpoint_pos = pygame.math.Vector2(0.0, 0.0)
     self._obstacles = _generate_level(size, self._viewpoint_pos)
-    start_pos = pygame.math.Vector2(0.0, size.y - 100)
+    start_pos = pygame.math.Vector2(size.x / 2, size.y - 100)
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
 
