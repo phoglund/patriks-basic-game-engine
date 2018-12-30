@@ -30,10 +30,14 @@ class Background(world.Drawable):
   def draw(self, screen, viewpoint_pos):
     assert self._image
 
-    # Parallax scroll according to the viewpoint position.
-    source_area = pygame.Rect(500 - viewpoint_pos.x / 2,
-                              500 - viewpoint_pos.y / 2, 640, 480)
-    screen.blit(self._image, -viewpoint_pos / 2, source_area)
+    # Parallax scroll /3 according to the viewpoint position.
+    viewport_width = screen.get_width()
+    draw_pos = -viewpoint_pos / 3
+
+    # Keep drawing the image until we pass over the edge of the viewport:
+    while draw_pos.x < viewpoint_pos.x + viewport_width:
+      screen.blit(self._image, draw_pos)
+      draw_pos.x += self._image.get_width()
 
 
 def load_background():

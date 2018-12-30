@@ -53,6 +53,8 @@ class Simulation(object):
       obstacle.draw(self._screen, self._viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
-    # Just center on player for now.
-    self._viewpoint_pos.x = player_pos.x - self._size.x / 2
-    self._viewpoint_pos.y = player_pos.y - self._size.y / 2
+    # Just center on player for now, but clamp so we don't show too
+    # much underground.
+    self._viewpoint_pos = player_pos - self._size / 2
+    if self._viewpoint_pos.y > self._size.y * 0.1:
+      self._viewpoint_pos.y = self._size.y * 0.1

@@ -53,7 +53,10 @@ class Ground(world.Thing):
     self._viewpoint_pos = viewpoint_pos
     self._width = screen.get_width()
     draw_pos = self._pos - viewpoint_pos
-    screen.blit(self._image, draw_pos)
+    viewpoint_width = screen.get_width()
+    while draw_pos.x < viewpoint_pos.x + viewpoint_width:
+      screen.blit(self._image, draw_pos)
+      draw_pos.x += self._image.get_width()
 
   @property
   def bounding_rect(self):
