@@ -12,17 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import pygame
 import sys
 
 import game_loop
 
 
+def parse_args():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-s', '--start_hidden', action='store_true',
+                      help='hide the game on start', required=False)
+  return parser.parse_args()
+
+
 def main():
   pygame.init()
   pygame.display.set_caption('Platform Game')
 
-  game_loop.demo()
+  args = parse_args()
+  game_loop.demo(args.start_hidden)
 
 if __name__ == '__main__':
   sys.exit(main())

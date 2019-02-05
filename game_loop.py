@@ -21,11 +21,12 @@ TARGET_FPS = 30.0
 COLOR_BLACK = pygame.Color(0, 0, 0)
 
 
-def demo():
+def demo(start_hidden):
   size = (640, 480)
   screen = pygame.display.set_mode(size)
+  if start_hidden:
+    pygame.display.iconify()
   clock = pygame.time.Clock()
-
   game = simulation.Simulation(screen, pygame.math.Vector2(size))
 
   running = True

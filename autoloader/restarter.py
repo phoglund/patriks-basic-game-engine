@@ -16,7 +16,12 @@ def launch_game():
     raise FileNotFoundError('Expected game main at %s' % game_main)
 
   python = sys.executable
-  proc = subprocess.Popen([python, game_main])
+
+  # Start the game at the same place and hidden by default.
+  center_window_env = os.environ.copy()
+  center_window_env['SDL_VIDEO_CENTERED'] = '1'
+  proc = subprocess.Popen(
+      [python, game_main, '--start_hidden'], env=center_window_env)
   return proc
 
 
@@ -55,25 +60,22 @@ def start_fresh_game():
   kill_game(pid_filename)
   proc = launch_game()
   write_pidfile(proc, pid_filename)
+  return proc
 
 
 def main():
-  start_fresh_game()
+  proc = start_fresh_game()
   game_files = list_game_files()
   modified_times = get_modified_times(game_files)
   while True:
     files_now = list_game_files()
-    if files_now != game_files:
-      game_files = files_now
-      modified_times = get_modified_times(game_files)
-      start_fresh_game()
     modified_times_now = get_modified_times(game_files)
-    if modified_times_now != modified_times:
+    if files_now != game_files or modified_times_now != modified_times:
+      game_files = files_now
       modified_times = modified_times_now
-      start_fresh_game()
+      proc = start_fresh_game()
 
     time.sleep(2)
-
 
 if __name__ == '__main__':
   sys.exit(main())
