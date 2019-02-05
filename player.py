@@ -16,6 +16,7 @@ import math
 import pygame
 
 import jump
+import speech_bubble
 import world
 
 
@@ -35,6 +36,7 @@ class Player(world.Thing):
     self._current_jump = jump.NullJump()
     self._draw_bounding_rect = False
     self._on_solid_ground = False
+    self._currently_saying = speech_bubble.NullSpeechBubble()
 
   @property
   def at(self) -> pygame.math.Vector2:
@@ -53,6 +55,9 @@ class Player(world.Thing):
 
     self._position += self._speed
 
+    if self._currently_saying.done():
+      self._currently_saying = speech_bubble.NullSpeechBubble()
+
   def collision_adjust(self, obstacle):
     if not obstacle.bounding_rect.colliderect(self.bounding_rect):
       return
@@ -62,6 +67,10 @@ class Player(world.Thing):
     else:
       # Otherwise: apply the normal algorithm.
       self._back_up_until_not_colliding(obstacle)
+
+  def say(self, what_to_say, duration_secs=5):
+    self._currently_saying = speech_bubble.SpeechBubble(
+        what_to_say, duration_secs)
 
   def _back_up_until_not_colliding(self, obstacle):
     them = obstacle.bounding_rect
@@ -109,6 +118,8 @@ class Player(world.Thing):
       draw_rect = pygame.Rect(self.bounding_rect)
       draw_rect.topleft = to_draw_coords(draw_rect.topleft, viewpoint_pos)
       pygame.draw.rect(screen, pygame.Color(255, 0, 0), draw_rect, 1)
+
+    self._currently_saying.draw(screen, x, y, head_radius)
 
   def _player_speed(self) -> pygame.Vector2:
     pressed = pygame.key.get_pressed()

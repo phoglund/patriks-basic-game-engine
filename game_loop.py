@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import pygame
+import pygame.freetype
 
 import simulation
 
@@ -26,6 +27,8 @@ def demo(start_hidden):
   screen = pygame.display.set_mode(size)
   if start_hidden:
     pygame.display.iconify()
+
+  pygame.freetype.init()
   clock = pygame.time.Clock()
   game = simulation.Simulation(screen, pygame.math.Vector2(size))
 

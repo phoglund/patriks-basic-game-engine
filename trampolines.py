@@ -47,6 +47,7 @@ class Trampoline(world.Thing):
   def apply_custom_collision(self, player, current_speed):
     player.launch_into_air(pygame.math.Vector2(
         current_speed.x * 10, -current_speed.y * 10))
+    player.say('AAAAAAAAAAAAAAAAH!!!', duration_secs=2)
 
 
 def random_trampoline(ground_y, bounds):
