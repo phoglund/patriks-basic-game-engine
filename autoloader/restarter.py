@@ -34,7 +34,7 @@ def kill_game(pid_filename):
   try:
     os.kill(int(pid), signal.SIGTERM)
   except OSError:
-    print('Failed to kill pid=%s, probably already dead' % pid)
+    pass  # Probably dead already.
 
 
 def write_pidfile(proc, pid_filename):
@@ -68,9 +68,16 @@ def main():
   game_files = list_game_files()
   modified_times = get_modified_times(game_files)
   while True:
+    game_died = proc.poll() is not None
+    if game_died and proc.returncode != 0:
+      print('Game crashed, bailing out.')
+      return 1
+
     files_now = list_game_files()
     modified_times_now = get_modified_times(game_files)
-    if files_now != game_files or modified_times_now != modified_times:
+    game_files_changed = files_now != game_files or modified_times_now != modified_times
+
+    if game_died or game_files_changed:
       game_files = files_now
       modified_times = modified_times_now
       proc = start_fresh_game()
