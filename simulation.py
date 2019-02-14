@@ -18,6 +18,7 @@ import random
 import background
 import obstacles
 import player
+import snow
 import trampolines
 
 
@@ -41,6 +42,7 @@ class Simulation(object):
     start_pos = pygame.math.Vector2(size.x / 2, size.y - 100)
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
+    self._snowflakes = []
 
   def advance(self, time_fraction):
     self._background.draw(self._screen, self._viewpoint_pos)
@@ -51,6 +53,14 @@ class Simulation(object):
     self._player.draw(self._screen, self._viewpoint_pos)
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self._viewpoint_pos)
+
+    snow.Snowflake.tick_snowflake_angle()
+    if random.random() < 0.5:
+      self._snowflakes.append(snow.Snowflake(
+          pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
+    for snowflake in self._snowflakes:
+      snowflake.move(time_fraction)
+      snowflake.draw(self._screen, self._viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
     # Just center on player for now, but clamp so we don't show too
