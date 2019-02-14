@@ -43,23 +43,40 @@ class Simulation(object):
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
     self._snowflakes = []
+    self._resting_snowflakes = []
 
   def advance(self, time_fraction):
     self._background.draw(self._screen, self._viewpoint_pos)
     self._player.move(time_fraction)
     for obstacle in self._obstacles:
+      # TODO(phoglund): Handle collisions uniformly with snow when it comes to
+      # passing time_fraction.
       self._player.collision_adjust(obstacle)
     self._move_viewpoint(self._player.at)
     self._player.draw(self._screen, self._viewpoint_pos)
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self._viewpoint_pos)
 
+    # Deal with snow.
     snow.Snowflake.tick_snowflake_angle()
-    if random.random() < 0.5:
+    for _ in range(10):
       self._snowflakes.append(snow.Snowflake(
           pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
     for snowflake in self._snowflakes:
       snowflake.move(time_fraction)
+      for obstacle in self._obstacles:
+        snowflake.collision_adjust(obstacle, time_fraction)
+
+      # This is incredibly expensive for now, must make faster!
+      # for resting_flake in self._resting_snowflakes:
+      #   snowflake.collision_adjust_resting_snowflake(
+      #       resting_flake, time_fraction)
+    self._resting_snowflakes += [s for s in self._snowflakes if s.resting]
+    self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
+
+    for snowflake in self._snowflakes:
+      snowflake.draw(self._screen, self._viewpoint_pos)
+    for snowflake in self._resting_snowflakes:
       snowflake.draw(self._screen, self._viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):

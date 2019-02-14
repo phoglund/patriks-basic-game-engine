@@ -32,12 +32,36 @@ class Snowflake(world.Drawable):
     self._position = position
     self._resting = False
 
+  @property
+  def at(self):
+    return self._position
+
+  @property
+  def resting(self):
+    return self._resting
+
   def draw(self, screen, viewpoint_pos):
     at = self._position - viewpoint_pos
     screen.set_at((int(at.x), int(at.y)), WHITE)
 
   def move(self, time_fraction):
     self._position += Snowflake._speed * time_fraction
+
+  def collision_adjust(self, obstacle, time_fraction):
+    if not obstacle.bounding_rect.collidepoint(self.at):
+      return
+
+    self._back_up_and_rest(time_fraction)
+
+  def collision_adjust_resting_snowflake(self, other_snowflake, time_fraction):
+    if other_snowflake.at != self.at:
+      return
+
+    self._back_up_and_rest(time_fraction)
+
+  def _back_up_and_rest(self, time_fraction):
+    self._position -= Snowflake._speed * time_fraction
+    self._resting = True
 
   @classmethod
   def tick_snowflake_angle(cls):
