@@ -21,7 +21,9 @@ import world
 
 PADDING = 5
 SPACING = 10
-RESIZE_AT_MOST_EVERY_X_SECS = 5
+FONT_SIZE = 18
+RESIZE_AT_MOST_EVERY_X_SECS = 2
+TEXT_COLOR = pygame.Color(64, 64, 255)
 
 
 class DebugPanel(world.Drawable):
@@ -30,7 +32,7 @@ class DebugPanel(world.Drawable):
     self._bounding_rect = pygame.Rect(
         initial_position.x, initial_position.y, 200, 100)
     self._debugged_values = {}
-    self._font = pygame.freetype.SysFont('Courier New', 18)
+    self._font = pygame.freetype.SysFont('Courier New', FONT_SIZE)
     self._row_height = self._font.get_rect('A').height
     self._last_resize_time = 0
 
@@ -44,7 +46,7 @@ class DebugPanel(world.Drawable):
 
   @debugged_values.setter
   def debugged_values(self, new_values):
-    new_values = {k: str(v) for k, v in new_values.items()}
+    new_values = {k.ljust(10): str(v) for k, v in new_values.items()}
     self._debugged_values = new_values
 
     # Resize to fit the new text (but not too often).
@@ -73,7 +75,7 @@ class DebugPanel(world.Drawable):
       x = self._bounding_rect.x + PADDING
       y = self._bounding_rect.y + PADDING + (SPACING + self._row_height) * i
       text = '%s: %s' % (key, value)
-      self._font.render_to(screen, (x, y), text)
+      self._font.render_to(screen, (x, y), text, fgcolor=TEXT_COLOR)
       i += 1
 
 

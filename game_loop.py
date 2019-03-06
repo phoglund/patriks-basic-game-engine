@@ -30,7 +30,7 @@ def demo(start_hidden):
 
   pygame.freetype.init()
   clock = pygame.time.Clock()
-  game = simulation.Simulation(screen, pygame.math.Vector2(size))
+  game = simulation.Simulation(screen, pygame.math.Vector2(size), clock)
 
   running = True
   while running:

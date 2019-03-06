@@ -17,8 +17,8 @@ import pygame
 import world
 
 
-DOWN_LEFT = pygame.math.Vector2(-1, 1)
-DOWN_RIGHT = pygame.math.Vector2(1, 1)
+DOWN_LEFT = pygame.math.Vector2(-5, 5)
+DOWN_RIGHT = pygame.math.Vector2(5, 5)
 WHITE = pygame.Color(255, 255, 255)
 
 

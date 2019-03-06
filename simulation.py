@@ -35,9 +35,10 @@ def _generate_level(size, viewpoint_pos):
 
 class Simulation(object):
 
-  def __init__(self, screen, size: pygame.math.Vector2):
+  def __init__(self, screen, size: pygame.math.Vector2, clock: pygame.time.Clock):
     self._screen = screen
     self._size = size
+    self._master_clock = clock
     self._viewpoint_pos = pygame.math.Vector2(0.0, 0.0)
     self._obstacles = _generate_level(size, self._viewpoint_pos)
     start_pos = pygame.math.Vector2(size.x / 2, size.y - 100)
@@ -45,7 +46,7 @@ class Simulation(object):
     self._background = background.load_background()
     self._snowflakes = []
     self._resting_snowflakes = []
-    self._snow_debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
+    self._debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
 
   def advance(self, time_fraction):
     self._background.draw(self._screen, self._viewpoint_pos)
@@ -61,7 +62,7 @@ class Simulation(object):
 
     # Deal with snow.
     snow.Snowflake.tick_snowflake_angle()
-    for _ in range(10):
+    for _ in range(50):
       self._snowflakes.append(snow.Snowflake(
           pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
     for snowflake in self._snowflakes:
@@ -81,9 +82,10 @@ class Simulation(object):
     for snowflake in self._resting_snowflakes:
       snowflake.draw(self._screen, self._viewpoint_pos)
 
-    self._snow_debug_panel.debugged_values = {'resting': len(self._resting_snowflakes),
-                                              'active': len(self._snowflakes)}
-    self._snow_debug_panel.draw(self._screen, self._viewpoint_pos)
+    self._debug_panel.debugged_values = {'resting': len(self._resting_snowflakes),
+                                         'active': len(self._snowflakes),
+                                         'fps': '%.1f' % self._master_clock.get_fps()}
+    self._debug_panel.draw(self._screen, self._viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
     # Just center on player for now, but clamp so we don't show too
