@@ -83,7 +83,10 @@ class Player(world.Thing):
 
     # Then, try moving forward each axis as much as possible.
     # We can only hit a side or top of the rect at a time, so don't
-    # block movement in the other direction.
+    # block movement in the other direction (this means we can slide)
+    # down the side of an obstacle and not get stuck in the side,
+    # for instance.
+    # TODO: probably causes the confusion below.
     self._position.x += self._speed.x
     if them.colliderect(self.bounding_rect):
       self._position.x -= self._speed.x
