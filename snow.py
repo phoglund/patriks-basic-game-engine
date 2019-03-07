@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
 import pygame
 
 import world
@@ -24,7 +25,7 @@ WHITE = pygame.Color(255, 255, 255)
 
 class Snowflake(world.Drawable):
 
-  _snowflake_progress = 0.0
+  _snowflake_progress = 0.5
   _progress_delta = 0.01
   _speed = DOWN_LEFT
 
@@ -93,11 +94,37 @@ class Snowflake(world.Drawable):
 WIDTH_PER_COLUMN = 5
 
 
+def spawn_snowpile(snowflake_pos: pygame.math.Vector2, spawned_on: world.Thing):
+  ground_rect = spawned_on.bounding_rect
+
+  # Limit the width for very large obstacles (like the ground) but don't go wider
+  # than the obstacle we landed on.
+  width = min(max(ground_rect.width, 200), ground_rect.width)
+  num_columns = math.ceil(width / WIDTH_PER_COLUMN)
+
+  # Spawn centered on the snowflake, but don't go off the edge of the obstacle.
+  # Be forgiving if the snowflake isn't quite where it's supposed to be, i.e.
+  # right on top of the obstacle (weird things happen when we back up for
+  # collision).
+  bottom_left = pygame.math.Vector2(
+      snowflake_pos.x - width / 2, ground_rect.top + 1)
+  if bottom_left.x < ground_rect.left:
+    bottom_left.x = ground_rect.left
+  if bottom_left.x + width > ground_rect.right:
+    bottom_left.x = ground_rect.right - width
+
+  print('Spawn %s on %s, num columns %s' %
+        (bottom_left, spawned_on.bounding_rect.width, num_columns))
+
+  return Snowpile(num_columns, bottom_left)
+
+
 class Snowpile(world.Thing):
 
-  def __init__(self, bottom_left_pos: pygame.math.Vector2):
-    self._snow_heights = [0] * 20   # Always 20 for now.
+  def __init__(self, num_columns, bottom_left_pos: pygame.math.Vector2):
+    self._snow_heights = [0] * num_columns
     self._bottom_left_pos = bottom_left_pos
+    self._draw_bounding_box = True
 
   def add(self, snowflake):
     relative_pos = snowflake.at - self._bottom_left_pos
@@ -114,7 +141,8 @@ class Snowpile(world.Thing):
     if highest_column < 10:
       highest_column = 10
     top_left = self._bottom_left_pos - (0, highest_column)
-    return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN * len(self._snow_heights), highest_column)
+    return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN *
+                       len(self._snow_heights), highest_column)
 
   @property
   def has_custom_collision(self):
@@ -125,18 +153,20 @@ class Snowpile(world.Thing):
 
   def draw(self, screen, viewpoint_pos):
     start = self._bottom_left_pos - viewpoint_pos
+    end = pygame.math.Vector2(
+        start.x + WIDTH_PER_COLUMN * len(self._snow_heights), start.y)
 
     def point_for_column(i, height):
       x = start.x + i * WIDTH_PER_COLUMN
       y = start.y - height
       return (x, y)
 
-    def end_point():
-      x = start.x + WIDTH_PER_COLUMN * len(self._snow_heights)
-      y = start.y
-      return (x, y)
-
-    pointlist = [point_for_column(i, height)
+    midpoints = [point_for_column(i, height)
                  for i, height in enumerate(self._snow_heights)]
-    pointlist += [end_point()]
+    pointlist = [start] + midpoints + [end]
     pygame.draw.polygon(screen, WHITE, pointlist)
+
+    if self._draw_bounding_box:
+      draw_rect = pygame.Rect(self.bounding_rect)
+      draw_rect.topleft = draw_rect.topleft - viewpoint_pos
+      pygame.draw.rect(screen, pygame.Color(255, 0, 0), draw_rect, 1)

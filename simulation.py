@@ -29,7 +29,7 @@ def _generate_level(size, viewpoint_pos):
   ground = obstacles.load_ground(
       y=ground_level, initial_viewpoint_pos=viewpoint_pos)
   some_trampolines = [trampolines.random_trampoline(
-      ground_y=ground_level, bounds=size) for _ in range(2)]
+      ground_y=ground_level, bounds=size) for _ in range(0)]
   return [ground] + some_obstacles + some_trampolines
 
 
@@ -49,7 +49,7 @@ class Simulation(object):
     self._debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
 
   def advance(self, time_fraction):
-    self._background.draw(self._screen, self._viewpoint_pos)
+    # self._background.draw(self._screen, self._viewpoint_pos)
     self._player.move(time_fraction)
     for obstacle in self._obstacles:
       # TODO(phoglund): Handle collisions uniformly with snow when it comes to
@@ -65,8 +65,8 @@ class Simulation(object):
     # TODO: move these values back after debugging snow piles.
     for _ in range(1):
       self._snowflakes.append(snow.Snowflake(
-          # pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
-          pygame.math.Vector2(200, 0)))
+          pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
+      # pygame.math.Vector2(200, 0)))
     for snowflake in self._snowflakes:
       snowflake.move(time_fraction)
       for pile in self._snow_piles:
@@ -77,7 +77,7 @@ class Simulation(object):
       for obstacle in self._obstacles:
         collided = snowflake.collision_adjust(obstacle, time_fraction)
         if collided:
-          new_snowpile = snow.Snowpile(snowflake.at)
+          new_snowpile = snow.spawn_snowpile(snowflake.at, spawned_on=obstacle)
           self._snow_piles.append(new_snowpile)
 
     self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
@@ -89,7 +89,8 @@ class Simulation(object):
 
     self._debug_panel.debugged_values = {'piles': len(self._snow_piles),
                                          'active': len(self._snowflakes),
-                                         'fps': '%.1f' % self._master_clock.get_fps()}
+                                         'fps': '%.1f' % self._master_clock.get_fps(),
+                                         'player_y': '%.1f' % self._player.at.y}
     self._debug_panel.draw(self._screen, self._viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
