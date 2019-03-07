@@ -45,7 +45,7 @@ class Simulation(object):
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
     self._snowflakes = []
-    self._resting_snowflakes = []
+    self._snow_piles = []
     self._debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
 
   def advance(self, time_fraction):
@@ -62,27 +62,32 @@ class Simulation(object):
 
     # Deal with snow.
     snow.Snowflake.tick_snowflake_angle()
-    for _ in range(50):
+    # TODO: move these values back after debugging snow piles.
+    for _ in range(1):
       self._snowflakes.append(snow.Snowflake(
-          pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
+          # pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
+          pygame.math.Vector2(200, 0)))
     for snowflake in self._snowflakes:
       snowflake.move(time_fraction)
+      for pile in self._snow_piles:
+        collided = snowflake.collision_adjust(pile, time_fraction)
+        if collided:
+          pile.add(snowflake)
+          continue
       for obstacle in self._obstacles:
-        snowflake.collision_adjust(obstacle, time_fraction)
+        collided = snowflake.collision_adjust(obstacle, time_fraction)
+        if collided:
+          new_snowpile = snow.Snowpile(snowflake.at)
+          self._snow_piles.append(new_snowpile)
 
-      # This is incredibly expensive for now, must make faster!
-      # for resting_flake in self._resting_snowflakes:
-      #   snowflake.collision_adjust_resting_snowflake(
-      #       resting_flake, time_fraction)
-    self._resting_snowflakes += [s for s in self._snowflakes if s.resting]
     self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
 
     for snowflake in self._snowflakes:
       snowflake.draw(self._screen, self._viewpoint_pos)
-    for snowflake in self._resting_snowflakes:
-      snowflake.draw(self._screen, self._viewpoint_pos)
+    for pile in self._snow_piles:
+      pile.draw(self._screen, self._viewpoint_pos)
 
-    self._debug_panel.debugged_values = {'resting': len(self._resting_snowflakes),
+    self._debug_panel.debugged_values = {'piles': len(self._snow_piles),
                                          'active': len(self._snowflakes),
                                          'fps': '%.1f' % self._master_clock.get_fps()}
     self._debug_panel.draw(self._screen, self._viewpoint_pos)

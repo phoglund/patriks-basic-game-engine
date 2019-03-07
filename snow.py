@@ -47,21 +47,23 @@ class Snowflake(world.Drawable):
   def move(self, time_fraction):
     self._position += Snowflake._speed * time_fraction
 
+  def collides_with_snowpile(self, snow_pile, time_fraction):
+    if not snow_pile.bounding_rect.collidepoint(self.at):
+      return False
+
+    self._resting = True
+    return True
+
   def collision_adjust(self, obstacle, time_fraction):
     if not obstacle.bounding_rect.collidepoint(self.at):
-      return
+      return False
 
-    self._back_up_and_rest(time_fraction)
+    # Back up until not colliding with the obstacle.
+    while obstacle.bounding_rect.collidepoint(self.at):
+      self._position -= Snowflake._speed * time_fraction * 0.1
 
-  def collision_adjust_resting_snowflake(self, other_snowflake, time_fraction):
-    if other_snowflake.at != self.at:
-      return
-
-    self._back_up_and_rest(time_fraction)
-
-  def _back_up_and_rest(self, time_fraction):
-    self._position -= Snowflake._speed * time_fraction
     self._resting = True
+    return True
 
   @classmethod
   def tick_snowflake_angle(cls):
@@ -74,3 +76,67 @@ class Snowflake(world.Drawable):
       cls._progress_delta = 0.01
 
     cls._speed = DOWN_LEFT.lerp(DOWN_RIGHT, cls._snowflake_progress)
+
+
+# Snow piles are represented like this:
+#
+# 1 2 1 0 1 2 3 ...
+#             _
+#   _       _/ \
+#  / \_   _/    \
+# /    \_/       \
+#
+# It's just bunch of heights. If a new snowflake lands, it increases
+# the height of the nearest column somewhat.
+
+# Total snowpile width = WIDTH_PER_COLUMN * num columns.
+WIDTH_PER_COLUMN = 5
+
+
+class Snowpile(world.Thing):
+
+  def __init__(self, bottom_left_pos: pygame.math.Vector2):
+    self._snow_heights = [0] * 20   # Always 20 for now.
+    self._bottom_left_pos = bottom_left_pos
+
+  def add(self, snowflake):
+    relative_pos = snowflake.at - self._bottom_left_pos
+    column = int(relative_pos.x / WIDTH_PER_COLUMN)
+    if column < 0 or column >= len(self._snow_heights):
+      print('Err, snowflake outside pile?')
+      column = 0
+
+    self._snow_heights[column] += 1
+
+  @property
+  def bounding_rect(self):
+    highest_column = max(self._snow_heights)
+    if highest_column < 10:
+      highest_column = 10
+    top_left = self._bottom_left_pos - (0, highest_column)
+    return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN * len(self._snow_heights), highest_column)
+
+  @property
+  def has_custom_collision(self):
+    return False
+
+  def apply_custom_collision(self, player, current_speed):
+    pass
+
+  def draw(self, screen, viewpoint_pos):
+    start = self._bottom_left_pos - viewpoint_pos
+
+    def point_for_column(i, height):
+      x = start.x + i * WIDTH_PER_COLUMN
+      y = start.y - height
+      return (x, y)
+
+    def end_point():
+      x = start.x + WIDTH_PER_COLUMN * len(self._snow_heights)
+      y = start.y
+      return (x, y)
+
+    pointlist = [point_for_column(i, height)
+                 for i, height in enumerate(self._snow_heights)]
+    pointlist += [end_point()]
+    pygame.draw.polygon(screen, WHITE, pointlist)
