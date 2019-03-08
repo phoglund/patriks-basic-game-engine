@@ -66,19 +66,22 @@ class Simulation(object):
     for _ in range(1):
       self._snowflakes.append(snow.Snowflake(
           pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
-      # pygame.math.Vector2(200, 0)))
     for snowflake in self._snowflakes:
       snowflake.move(time_fraction)
       for pile in self._snow_piles:
-        collided = snowflake.collision_adjust(pile, time_fraction)
+        collided = snowflake.collides_with_snowpile(pile, time_fraction)
         if collided:
           pile.add(snowflake)
-          continue
+          break
+      if snowflake.resting:
+        # The snowflake is gone now, don't consider for other collisions.
+        continue
       for obstacle in self._obstacles:
         collided = snowflake.collision_adjust(obstacle, time_fraction)
         if collided:
           new_snowpile = snow.spawn_snowpile(snowflake.at, spawned_on=obstacle)
           self._snow_piles.append(new_snowpile)
+          break
 
     self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
 

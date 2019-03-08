@@ -99,7 +99,7 @@ def spawn_snowpile(snowflake_pos: pygame.math.Vector2, spawned_on: world.Thing):
 
   # Limit the width for very large obstacles (like the ground) but don't go wider
   # than the obstacle we landed on.
-  width = min(max(ground_rect.width, 200), ground_rect.width)
+  width = min(ground_rect.width, 200)
   num_columns = math.ceil(width / WIDTH_PER_COLUMN)
 
   # Spawn centered on the snowflake, but don't go off the edge of the obstacle.
@@ -113,8 +113,8 @@ def spawn_snowpile(snowflake_pos: pygame.math.Vector2, spawned_on: world.Thing):
   if bottom_left.x + width > ground_rect.right:
     bottom_left.x = ground_rect.right - width
 
-  print('Spawn %s on %s, num columns %s' %
-        (bottom_left, spawned_on.bounding_rect.width, num_columns))
+  print('Spawn %s on %s, width %d, num columns %s' %
+        (bottom_left, spawned_on.bounding_rect.width, width, num_columns))
 
   return Snowpile(num_columns, bottom_left)
 
@@ -138,8 +138,8 @@ class Snowpile(world.Thing):
   @property
   def bounding_rect(self):
     highest_column = max(self._snow_heights)
-    if highest_column < 10:
-      highest_column = 10
+    if highest_column < 50:
+      highest_column = 50
     top_left = self._bottom_left_pos - (0, highest_column)
     return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN *
                        len(self._snow_heights), highest_column)

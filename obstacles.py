@@ -60,9 +60,8 @@ class Ground(world.Thing):
 
   @property
   def bounding_rect(self):
-    # Move the bounding rect with the viewpoint - the ground is infinite.
-    very_high_height = 10000
-    return pygame.Rect(self._viewpoint_pos.x, self._pos.y, self._width, very_high_height)
+    # Make the ground be very thick and basically infinite in both directions.
+    return pygame.Rect(-10000000, self._pos.y, 200000000, 10000)
 
 
 def random_obstacle(bounds):
