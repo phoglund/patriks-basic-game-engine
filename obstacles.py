@@ -37,9 +37,9 @@ class Box(world.Thing):
 class Ground(world.Thing):
 
   def __init__(self, y, initial_viewpoint_pos):
-    # The ground is infinite on the x axis for now.
+    # The ground is infinite forwards on the x axis for now.
     self._color = pygame.Color(255, 128, 128)
-    self._pos = pygame.math.Vector2(-1000, y)
+    self._pos = pygame.math.Vector2(-10000, y)
     self._image = None
     self._viewpoint_pos = initial_viewpoint_pos
     self._width = 1000

@@ -61,11 +61,13 @@ class Simulation(object):
       obstacle.draw(self._screen, self._viewpoint_pos)
 
     # Deal with snow.
+    def hit_top_of_obstacle(snowflake, obstacle):
+      return snowflake.at.y < obstacle.bounding_rect.top
+
     snow.Snowflake.tick_snowflake_angle()
-    # TODO: move these values back after debugging snow piles.
-    for _ in range(1):
+    for _ in range(10):
       self._snowflakes.append(snow.Snowflake(
-          pygame.math.Vector2(200 + (random.random() - 0.5) * 1000, 0)))
+          pygame.math.Vector2(200 + random.random() * 1000, 0)))
     for snowflake in self._snowflakes:
       snowflake.move(time_fraction)
       for pile in self._snow_piles:
@@ -79,8 +81,11 @@ class Simulation(object):
       for obstacle in self._obstacles:
         collided = snowflake.collision_adjust(obstacle, time_fraction)
         if collided:
-          new_snowpile = snow.spawn_snowpile(snowflake.at, spawned_on=obstacle)
-          self._snow_piles.append(new_snowpile)
+          # Just ignore side hits on obstacles.
+          if hit_top_of_obstacle(snowflake, obstacle):
+            new_snowpile = snow.spawn_snowpile(
+                snowflake.at, spawned_on=obstacle)
+            self._snow_piles.append(new_snowpile)
           break
 
     self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
@@ -98,7 +103,10 @@ class Simulation(object):
 
   def _move_viewpoint(self, player_pos):
     # Just center on player for now, but clamp so we don't show too
-    # much underground.
+    # much underground. Also don't move left of 0 since there's a
+    # a bug with ground rendering I can't be bothered to fix.
     self._viewpoint_pos = player_pos - self._size / 2
     if self._viewpoint_pos.y > self._size.y * 0.1:
       self._viewpoint_pos.y = self._size.y * 0.1
+    if self._viewpoint_pos.x < 0:
+      self._viewpoint_pos.x = 0

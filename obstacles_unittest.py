@@ -23,11 +23,16 @@ class ObstaclesTest(unittest.TestCase):
   def testGroundCollidesWithAnythingBelowGroundLevel(self):
     ground = obstacles.load_ground(0, pygame.math.Vector2(0, 0))
 
+    # Remember, increasing y means going down.
     bound = ground.bounding_rect
     self.assertTrue(bound)
     self.assertTrue(bound.collidepoint(-14, 1))
     self.assertTrue(bound.collidepoint(14, 1))
-    self.assertTrue(bound.collidepoint(10000, 1))
+    self.assertTrue(bound.collidepoint(100000, 1))
+    self.assertTrue(bound.collidepoint(-100000, 1))
+    self.assertTrue(bound.collidepoint(0, 9999))
+    self.assertFalse(bound.collidepoint(10000, -1))
+
 
 pygame.init()
 size = (640, 480)

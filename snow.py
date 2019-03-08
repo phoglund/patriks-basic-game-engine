@@ -14,12 +14,14 @@
 
 import math
 import pygame
+import random
 
 import world
 
 
-DOWN_LEFT = pygame.math.Vector2(-5, 5)
-DOWN_RIGHT = pygame.math.Vector2(5, 5)
+FALL_SPEED = 5
+DOWN_LEFT = pygame.math.Vector2(-FALL_SPEED, FALL_SPEED)
+DOWN_RIGHT = pygame.math.Vector2(FALL_SPEED, FALL_SPEED)
 WHITE = pygame.Color(255, 255, 255)
 
 
@@ -113,9 +115,6 @@ def spawn_snowpile(snowflake_pos: pygame.math.Vector2, spawned_on: world.Thing):
   if bottom_left.x + width > ground_rect.right:
     bottom_left.x = ground_rect.right - width
 
-  print('Spawn %s on %s, width %d, num columns %s' %
-        (bottom_left, spawned_on.bounding_rect.width, width, num_columns))
-
   return Snowpile(num_columns, bottom_left)
 
 
@@ -124,22 +123,25 @@ class Snowpile(world.Thing):
   def __init__(self, num_columns, bottom_left_pos: pygame.math.Vector2):
     self._snow_heights = [0] * num_columns
     self._bottom_left_pos = bottom_left_pos
-    self._draw_bounding_box = True
+    self._draw_bounding_box = False
 
   def add(self, snowflake):
-    relative_pos = snowflake.at - self._bottom_left_pos
-    column = int(relative_pos.x / WIDTH_PER_COLUMN)
-    if column < 0 or column >= len(self._snow_heights):
-      print('Err, snowflake outside pile?')
-      column = 0
+    # TODO: evaluate add algorithms. For now, just put the new flake in
+    # a random location in the pile.
+    # relative_pos = snowflake.at - self._bottom_left_pos
+    # column = int(relative_pos.x / WIDTH_PER_COLUMN)
+    # if column < 0 or column >= len(self._snow_heights):
+      # This can happen if snowflakes hit from an angle.
+    column = random.randint(0, len(self._snow_heights) - 1)
 
     self._snow_heights[column] += 1
 
   @property
   def bounding_rect(self):
     highest_column = max(self._snow_heights)
-    if highest_column < 50:
-      highest_column = 50
+    if highest_column < FALL_SPEED * 2:
+      # Make the bounding rect big enough to catch some snowflakes.
+      highest_column = FALL_SPEED * 2
     top_left = self._bottom_left_pos - (0, highest_column)
     return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN *
                        len(self._snow_heights), highest_column)
