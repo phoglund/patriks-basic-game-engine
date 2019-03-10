@@ -55,40 +55,13 @@ class Simulation(object):
       # TODO(phoglund): Handle collisions uniformly with snow when it comes to
       # passing time_fraction.
       self._player.collision_adjust(obstacle)
+
+    self._spawn_snowflakes()
+    self._move_snow(time_fraction)
     self._move_viewpoint(self._player.at)
     self._player.draw(self._screen, self._viewpoint_pos)
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self._viewpoint_pos)
-
-    # Deal with snow.
-    def hit_top_of_obstacle(snowflake, obstacle):
-      return snowflake.at.y < obstacle.bounding_rect.top
-
-    snow.Snowflake.tick_snowflake_angle()
-    for _ in range(10):
-      self._snowflakes.append(snow.Snowflake(
-          pygame.math.Vector2(200 + random.random() * 1000, 0)))
-    for snowflake in self._snowflakes:
-      snowflake.move(time_fraction)
-      for pile in self._snow_piles:
-        collided = snowflake.collides_with_snowpile(pile, time_fraction)
-        if collided:
-          pile.add(snowflake)
-          break
-      if snowflake.resting:
-        # The snowflake is gone now, don't consider for other collisions.
-        continue
-      for obstacle in self._obstacles:
-        collided = snowflake.collision_adjust(obstacle, time_fraction)
-        if collided:
-          # Just ignore side hits on obstacles.
-          if hit_top_of_obstacle(snowflake, obstacle):
-            new_snowpile = snow.spawn_snowpile(
-                snowflake.at, spawned_on=obstacle)
-            self._snow_piles.append(new_snowpile)
-          break
-
-    self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
 
     for snowflake in self._snowflakes:
       snowflake.draw(self._screen, self._viewpoint_pos)
@@ -110,3 +83,48 @@ class Simulation(object):
       self._viewpoint_pos.y = self._size.y * 0.1
     if self._viewpoint_pos.x < 0:
       self._viewpoint_pos.x = 0
+
+  def _spawn_snowflakes(self):
+    snow.Snowflake.tick_snowflake_angle()
+    new_snowflakes = [snow.Snowflake(
+        pygame.math.Vector2(200 + random.random() * 1000, 0)
+    ) for _ in range(10)]
+
+    self._snowflakes.extend(new_snowflakes)
+
+  def _handle_snowpile_collisions(self, snowflake, time_fraction):
+    for pile in self._snow_piles:
+      collided = snowflake.collides_with_snowpile(pile, time_fraction)
+      if collided:
+        pile.add(snowflake)
+        return True
+
+    return False
+
+  def _handle_obstacle_collisions(self, snowflake, time_fraction):
+    for obstacle in self._obstacles:
+      collided = snowflake.collision_adjust(obstacle, time_fraction)
+      if collided:
+        hit_top_of_obstacle = snowflake.at.y < obstacle.bounding_rect.top
+        if not hit_top_of_obstacle:
+          # Just ignore side hits on obstacles.
+          return
+
+        # Landed on obstacle: spawn a snowpile on it.
+        new_snowpile = snow.spawn_snowpile(
+            snowflake.at, spawned_on=obstacle)
+        self._snow_piles.append(new_snowpile)
+
+  def _move_snow(self, time_fraction):
+    for snowflake in self._snowflakes:
+      snowflake.move(time_fraction)
+      merged_with_snowpile = self._handle_snowpile_collisions(
+          snowflake, time_fraction)
+      if merged_with_snowpile:
+        continue
+      else:
+        self._handle_obstacle_collisions(snowflake, time_fraction)
+
+    # Sweep all the resting snowflakes we marked above. Flakes are marked as resting
+    # if the collision algorithms above find collision.
+    self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
