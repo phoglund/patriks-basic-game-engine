@@ -37,6 +37,7 @@ def demo(start_hidden):
     screen.fill(COLOR_BLACK)
     dt = clock.tick(TARGET_FPS)
     game.advance(dt / TARGET_FPS)
+    game.draw()
     pygame.display.flip()
 
     for event in pygame.event.get():

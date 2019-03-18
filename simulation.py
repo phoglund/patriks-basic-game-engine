@@ -59,6 +59,8 @@ class Simulation(object):
     self._spawn_snowflakes()
     self._move_snow(time_fraction)
     self._move_viewpoint(self._player.at)
+
+  def draw(self):
     self._player.draw(self._screen, self._viewpoint_pos)
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self._viewpoint_pos)
