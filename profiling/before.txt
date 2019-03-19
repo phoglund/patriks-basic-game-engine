@@ -1,18 +1,18 @@
-Mon Mar 18 21:00:07 2019    /tmp/tmp53in158a
+Tue Mar 19 11:24:50 2019    /tmp/tmp46ooz6ek
 
-         10122507 function calls in 2.836 seconds
+         5439919 function calls in 1.263 seconds
 
    Ordered by: cumulative time
-   List reduced from 52 to 10 due to restriction <10>
+   List reduced from 51 to 10 due to restriction <10>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.000    0.000    2.836    2.836 {built-in method builtins.exec}
-        1    0.000    0.000    2.836    2.836 <string>:1(<module>)
-        1    0.000    0.000    2.836    2.836 /home/patrik/dev/patriks-basic-game-engine/profile_simulation.py:31(advance_n_steps)
-      100    0.001    0.000    2.836    0.028 /home/patrik/dev/patriks-basic-game-engine/simulation.py:51(advance)
-      100    0.027    0.000    2.828    0.028 /home/patrik/dev/patriks-basic-game-engine/simulation.py:120(_move_snow)
-    38868    0.189    0.000    2.063    0.000 /home/patrik/dev/patriks-basic-game-engine/simulation.py:97(_handle_snowpile_collisions)
-  1117191    0.498    0.000    1.874    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:53(collides_with_snowpile)
-  1117191    0.823    0.000    1.149    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:146(bounding_rect)
-    38647    0.129    0.000    0.715    0.000 /home/patrik/dev/patriks-basic-game-engine/simulation.py:106(_handle_obstacle_collisions)
-   810979    0.353    0.000    0.586    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:60(collision_adjust)
+        1    0.000    0.000    1.263    1.263 {built-in method builtins.exec}
+        1    0.000    0.000    1.263    1.263 <string>:1(<module>)
+        1    0.000    0.000    1.263    1.263 /home/patrik/dev/patriks-basic-game-engine/profile_simulation.py:33(advance_n_steps)
+      100    0.001    0.000    1.263    0.013 /home/patrik/dev/patriks-basic-game-engine/simulation.py:51(advance)
+      100    0.019    0.000    1.256    0.013 /home/patrik/dev/patriks-basic-game-engine/simulation.py:120(_move_snow)
+    34360    0.065    0.000    0.673    0.000 /home/patrik/dev/patriks-basic-game-engine/simulation.py:97(_handle_snowpile_collisions)
+   404503    0.169    0.000    0.607    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:53(collides_with_snowpile)
+    34054    0.101    0.000    0.548    0.000 /home/patrik/dev/patriks-basic-game-engine/simulation.py:106(_handle_obstacle_collisions)
+   714015    0.272    0.000    0.447    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:60(collision_adjust)
+   404503    0.252    0.000    0.367    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:146(bounding_rect)

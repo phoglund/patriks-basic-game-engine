@@ -16,9 +16,11 @@ import cProfile
 import pstats
 import pygame
 import tempfile
+import random
 
 import simulation
 
+random.seed(0)
 pygame.init()
 pygame.display.set_caption('Profiling mode...')
 size = (640, 480)
