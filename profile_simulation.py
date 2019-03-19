@@ -15,8 +15,9 @@
 import cProfile
 import pstats
 import pygame
-import tempfile
 import random
+import tempfile
+import timeit
 
 import simulation
 
@@ -35,6 +36,9 @@ def advance_n_steps(n):
     game.advance(1.0)
 
 with tempfile.NamedTemporaryFile() as stats_file:
+  start = timeit.default_timer()
   cProfile.run('advance_n_steps(100)', stats_file.name)
+  end = timeit.default_timer()
+  print('Elapsed = %f seconds' % (end - start))
   stats = pstats.Stats(stats_file.name)
   stats.sort_stats('cumulative').print_stats(10)
