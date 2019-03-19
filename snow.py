@@ -125,7 +125,7 @@ class Snowpile(world.Thing):
     self._bottom_left_pos = bottom_left_pos
     self._draw_bounding_box = False
 
-  def add(self, snowflake):
+  def add(self, snowflake_pos):
     # TODO: evaluate add algorithms. For now, just put the new flake in
     # a random location in the pile.
     # relative_pos = snowflake.at - self._bottom_left_pos

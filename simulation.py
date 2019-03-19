@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import array
 import pygame
 import random
 
@@ -44,7 +45,7 @@ class Simulation(object):
     start_pos = pygame.math.Vector2(size.x / 2, size.y - 100)
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
-    self._snowflakes = []
+    self._snowflakes = array.array('f')
     self._snow_piles = []
     self._debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
 
@@ -65,8 +66,11 @@ class Simulation(object):
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self._viewpoint_pos)
 
-    for snowflake in self._snowflakes:
-      snowflake.draw(self._screen, self._viewpoint_pos)
+    for i in range(0, len(self._snowflakes), 2):
+      x, y = self._snowflakes[i:i + 2]
+      x -= self._viewpoint_pos.x
+      y -= self._viewpoint_pos.y
+      self._screen.set_at((int(x), int(y)), snow.WHITE)
     for pile in self._snow_piles:
       pile.draw(self._screen, self._viewpoint_pos)
 
@@ -92,41 +96,61 @@ class Simulation(object):
         pygame.math.Vector2(200 + random.random() * 1000, 0)
     ) for _ in range(10)]
 
-    self._snowflakes.extend(new_snowflakes)
+    for _ in range(10):
+      # TODO: this way of representing snowflakes is way faster but pretty
+      # ugly. Find some way of maybe restoring the Snowflake abstraction
+      # or at least make this look a bit nicer.
+      x = 200 + random.random() * 1000
+      y = 0
+      self._snowflakes.append(x)
+      self._snowflakes.append(y)
 
-  def _handle_snowpile_collisions(self, snowflake, time_fraction):
+  def _handle_snowpile_collisions(self, x, y, time_fraction):
     for pile in self._snow_piles:
-      collided = snowflake.collides_with_snowpile(pile, time_fraction)
-      if collided:
-        pile.add(snowflake)
+      if pile.bounding_rect.collidepoint(x, y):
+        pile.add(snowflake_pos=pygame.math.Vector2(x, y))
         return True
 
     return False
 
-  def _handle_obstacle_collisions(self, snowflake, time_fraction):
+  def _handle_obstacle_collisions(self, x, y, time_fraction):
     for obstacle in self._obstacles:
-      collided = snowflake.collision_adjust(obstacle, time_fraction)
-      if collided:
-        hit_top_of_obstacle = snowflake.at.y < obstacle.bounding_rect.top
-        if not hit_top_of_obstacle:
-          # Just ignore side hits on obstacles.
-          return
+      if not obstacle.bounding_rect.collidepoint(x, y):
+        continue
 
-        # Landed on obstacle: spawn a snowpile on it.
-        new_snowpile = snow.spawn_snowpile(
-            snowflake.at, spawned_on=obstacle)
-        self._snow_piles.append(new_snowpile)
+      # Back up the snowflake until not colliding.
+      pos = pygame.math.Vector2(x, y)
+      while obstacle.bounding_rect.collidepoint(pos):
+        pos -= snow.Snowflake._speed * time_fraction * 0.1
+
+      hit_top_of_obstacle = pos.y < obstacle.bounding_rect.top
+      if not hit_top_of_obstacle:
+        # Just ignore side hits on obstacles.
+        return True
+
+      # Landed on obstacle: spawn a snowpile on it.
+      new_snowpile = snow.spawn_snowpile(pos, spawned_on=obstacle)
+      self._snow_piles.append(new_snowpile)
+      return True
+
+    # Did not collide with anything.
+    return False
 
   def _move_snow(self, time_fraction):
-    for snowflake in self._snowflakes:
-      snowflake.move(time_fraction)
+    to_delete = []
+    for i in range(0, len(self._snowflakes), 2):
+      self._snowflakes[i] += snow.Snowflake._speed.x * time_fraction
+      self._snowflakes[i + 1] += snow.Snowflake._speed.y * time_fraction
+      x, y = self._snowflakes[i:i + 2]
       merged_with_snowpile = self._handle_snowpile_collisions(
-          snowflake, time_fraction)
+          x, y, time_fraction)
       if merged_with_snowpile:
-        continue
+        to_delete.append(i)
       else:
-        self._handle_obstacle_collisions(snowflake, time_fraction)
+        collided = self._handle_obstacle_collisions(x, y, time_fraction)
+        if collided:
+          to_delete.append(i)
 
-    # Sweep all the resting snowflakes we marked above. Flakes are marked as resting
-    # if the collision algorithms above find collision.
-    self._snowflakes[:] = [s for s in self._snowflakes if not s.resting]
+    # Sweep all the resting snowflakes we marked above.
+    for index in sorted(to_delete, reverse=True):
+      del self._snowflakes[index:index + 2]

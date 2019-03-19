@@ -1,0 +1,19 @@
+Elapsed = 0.850084 seconds
+Tue Mar 19 12:21:52 2019    /tmp/tmpkg6s4iis
+
+         3269735 function calls in 0.850 seconds
+
+   Ordered by: cumulative time
+   List reduced from 46 to 10 due to restriction <10>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.850    0.850 {built-in method builtins.exec}
+        1    0.000    0.000    0.850    0.850 <string>:1(<module>)
+        1    0.000    0.000    0.850    0.850 /home/patrik/dev/patriks-basic-game-engine/profile_simulation.py:34(advance_n_steps)
+      100    0.001    0.000    0.850    0.008 /home/patrik/dev/patriks-basic-game-engine/simulation.py:52(advance)
+      100    0.034    0.000    0.843    0.008 /home/patrik/dev/patriks-basic-game-engine/simulation.py:136(_move_snow)
+    33732    0.112    0.000    0.541    0.000 /home/patrik/dev/patriks-basic-game-engine/simulation.py:105(_handle_snowpile_collisions)
+   444703    0.264    0.000    0.383    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:146(bounding_rect)
+    33426    0.147    0.000    0.268    0.000 /home/patrik/dev/patriks-basic-game-engine/simulation.py:113(_handle_obstacle_collisions)
+  1146197    0.111    0.000    0.111    0.000 {method 'collidepoint' of 'pygame.Rect' objects}
+   444703    0.099    0.000    0.099    0.000 {built-in method builtins.max}
