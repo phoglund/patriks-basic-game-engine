@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import array
 import math
 import pygame
 import random
@@ -25,48 +26,94 @@ DOWN_RIGHT = pygame.math.Vector2(FALL_SPEED, FALL_SPEED)
 WHITE = pygame.Color(255, 255, 255)
 
 
-class Snowflake(world.Drawable):
+class Snowfall(world.Drawable):
 
   _snowflake_progress = 0.5
   _progress_delta = 0.01
   _speed = DOWN_LEFT
 
-  def __init__(self, position):
-    self._position = position
-    self._resting = False
+  def __init__(self):
+    self._snowflakes = array.array('f')
+    self._snow_piles = []
 
   @property
-  def at(self):
-    return self._position
+  def snowflakes(self):
+    return self._snowflakes
 
   @property
-  def resting(self):
-    return self._resting
+  def snow_piles(self):
+    return self._snow_piles
 
   def draw(self, screen, viewpoint_pos):
-    at = self._position - viewpoint_pos
-    screen.set_at((int(at.x), int(at.y)), WHITE)
+    for i in range(0, len(self._snowflakes), 2):
+      x = self._snowflakes[i] - viewpoint_pos.x
+      y = self._snowflakes[i + 1] - viewpoint_pos.y
+      screen.set_at((int(x), int(y)), WHITE)
 
-  def move(self, time_fraction):
-    self._position += Snowflake._speed * time_fraction
+    for pile in self._snow_piles:
+      pile.draw(screen, viewpoint_pos)
 
-  def collides_with_snowpile(self, snow_pile, time_fraction):
-    if not snow_pile.bounding_rect.collidepoint(self.at):
-      return False
+  def spawn_snowflakes(self):
+    Snowfall.tick_snowflake_angle()
+    for _ in range(10):
+      # TODO: this way of representing snowflakes is way faster but pretty
+      # ugly. Find some way of maybe restoring the Snowflake abstraction
+      # or at least make this look a bit nicer.
+      x = 200 + random.random() * 1000
+      y = 0
+      self._snowflakes.append(x)
+      self._snowflakes.append(y)
 
-    self._resting = True
-    return True
+  def move_snow(self, obstacles, time_fraction):
+    to_delete = []
+    for i in range(0, len(self._snowflakes), 2):
+      self._snowflakes[i] += Snowfall._speed.x * time_fraction
+      self._snowflakes[i + 1] += Snowfall._speed.y * time_fraction
+      x, y = self._snowflakes[i:i + 2]
+      merged_with_snowpile = self._handle_snowpile_collisions(
+          x, y, time_fraction)
+      if merged_with_snowpile:
+        to_delete.append(i)
+      else:
+        collided = self._handle_obstacle_collisions(
+            obstacles, x, y, time_fraction)
+        if collided:
+          to_delete.append(i)
 
-  def collision_adjust(self, obstacle, time_fraction):
-    if not obstacle.bounding_rect.collidepoint(self.at):
-      return False
+    # Sweep all the resting snowflakes we marked above.
+    for index in sorted(to_delete, reverse=True):
+      del self._snowflakes[index:index + 2]
 
-    # Back up until not colliding with the obstacle.
-    while obstacle.bounding_rect.collidepoint(self.at):
-      self._position -= Snowflake._speed * time_fraction * 0.1
+  def _handle_snowpile_collisions(self, x, y, time_fraction):
+    for pile in self._snow_piles:
+      if pile.bounding_rect.collidepoint(x, y):
+        pile.add(snowflake_pos=pygame.math.Vector2(x, y))
+        return True
 
-    self._resting = True
-    return True
+    return False
+
+  def _handle_obstacle_collisions(self, obstacles, x, y, time_fraction):
+    for obstacle in obstacles:
+      if not obstacle.bounding_rect.collidepoint(x, y):
+        continue
+
+      # Back up the snowflake until not colliding.
+      pos = pygame.math.Vector2(x, y)
+      while obstacle.bounding_rect.collidepoint(pos):
+        pos -= Snowfall._speed * time_fraction * 0.1
+
+      hit_top_of_obstacle = pos.y < obstacle.bounding_rect.top
+      if not hit_top_of_obstacle:
+        # Just ignore side hits on obstacles.
+        return True
+
+      # Landed on obstacle: spawn a snowpile on it.
+      new_snowpile = spawn_snowpile(pos, spawned_on=obstacle)
+      self._snow_piles.append(new_snowpile)
+      return True
+
+    # Did not collide with anything.
+    return False
 
   @classmethod
   def tick_snowflake_angle(cls):
