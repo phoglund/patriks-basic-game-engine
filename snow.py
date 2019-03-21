@@ -33,25 +33,16 @@ class Snowfall(world.Drawable):
   _speed = DOWN_LEFT
 
   def __init__(self):
-    # Each snowflake has two floats, one for x and one for y.
     self._snowflakes = arrays.FastPosArray()
-    self._snow_piles = []
 
   @property
   def snowflakes(self):
     return self._snowflakes
 
-  @property
-  def snow_piles(self):
-    return self._snow_piles
-
   def draw(self, screen, viewpoint_pos):
     for x, y in self._snowflakes.positions:
       screen.set_at((int(x - viewpoint_pos.x),
                      int(y - viewpoint_pos.y)), WHITE)
-
-    for pile in self._snow_piles:
-      pile.draw(screen, viewpoint_pos)
 
   def spawn_snowflakes(self):
     Snowfall.tick_snowflake_angle()
@@ -63,46 +54,22 @@ class Snowfall(world.Drawable):
     delta = Snowfall._speed * time_fraction
     for i in range(self._snowflakes.num_positions()):
       x, y = self._snowflakes.write_add(i, x=delta.x, y=delta.y)
-      merged_with_snowpile = self._handle_snowpile_collisions(
-          x, y, time_fraction)
-      if merged_with_snowpile:
+      collided = self._handle_snowflake_collision(
+          obstacles, x, y, time_fraction)
+      if collided:
         to_delete.append(i)
-      else:
-        collided = self._handle_obstacle_collisions(
-            obstacles, x, y, time_fraction)
-        if collided:
-          to_delete.append(i)
 
     # Sweep all the resting snowflakes we marked above.
     for index in sorted(to_delete, reverse=True):
       self._snowflakes.delete(index)
 
-  def _handle_snowpile_collisions(self, x, y, time_fraction):
-    for pile in self._snow_piles:
-      if pile.bounding_rect.collidepoint(x, y):
-        pile.add(snowflake_pos=pygame.math.Vector2(x, y))
-        return True
-
-    return False
-
-  def _handle_obstacle_collisions(self, obstacles, x, y, time_fraction):
+  def _handle_snowflake_collision(self, obstacles, x, y, time_fraction):
     for obstacle in obstacles:
-      if not obstacle.bounding_rect.collidepoint(x, y):
+      rect = obstacle.bounding_rect_with_snow
+      if not rect.collidepoint(x, y):
         continue
 
-      # Back up the snowflake until not colliding.
-      pos = pygame.math.Vector2(x, y)
-      while obstacle.bounding_rect.collidepoint(pos):
-        pos -= Snowfall._speed * time_fraction * 0.1
-
-      hit_top_of_obstacle = pos.y < obstacle.bounding_rect.top
-      if not hit_top_of_obstacle:
-        # Just ignore side hits on obstacles.
-        return True
-
-      # Landed on obstacle: spawn a snowpile on it.
-      new_snowpile = spawn_snowpile(pos, spawned_on=obstacle)
-      self._snow_piles.append(new_snowpile)
+      obstacle.snowpile.add(pygame.math.Vector2(x, y))
       return True
 
     # Did not collide with anything.
@@ -136,26 +103,9 @@ class Snowfall(world.Drawable):
 WIDTH_PER_COLUMN = 5
 
 
-def spawn_snowpile(snowflake_pos: pygame.math.Vector2, spawned_on: world.Thing):
-  ground_rect = spawned_on.bounding_rect
-
-  # Limit the width for very large obstacles (like the ground) but don't go wider
-  # than the obstacle we landed on.
-  width = min(ground_rect.width, 200)
-  num_columns = math.ceil(width / WIDTH_PER_COLUMN)
-
-  # Spawn centered on the snowflake, but don't go off the edge of the obstacle.
-  # Be forgiving if the snowflake isn't quite where it's supposed to be, i.e.
-  # right on top of the obstacle (weird things happen when we back up for
-  # collision).
-  bottom_left = pygame.math.Vector2(
-      snowflake_pos.x - width / 2, ground_rect.top + 1)
-  if bottom_left.x < ground_rect.left:
-    bottom_left.x = ground_rect.left
-  if bottom_left.x + width > ground_rect.right:
-    bottom_left.x = ground_rect.right - width
-
-  return Snowpile(num_columns, bottom_left)
+def spawn_snowpile(spawned_on: pygame.Rect):
+  num_columns = math.ceil(spawned_on.width / WIDTH_PER_COLUMN)
+  return Snowpile(num_columns, pygame.math.Vector2(spawned_on.topleft))
 
 
 class Snowpile(world.Thing):

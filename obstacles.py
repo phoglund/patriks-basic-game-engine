@@ -16,6 +16,7 @@ import os
 import pygame
 import random
 
+import snow
 import world
 
 
@@ -24,14 +25,26 @@ class Box(world.Thing):
   def __init__(self, rect, color):
     self._rect = rect
     self._color = color
+    self._snowpile = snow.spawn_snowpile(spawned_on=rect)
 
   def draw(self, screen, viewpoint_pos):
     draw_pos = self._rect.move(-viewpoint_pos)
     pygame.draw.rect(screen, self._color, draw_pos, 0)
+    self._snowpile.draw(screen, viewpoint_pos)
+
+  @property
+  def snowpile(self):
+    return self._snowpile
 
   @property
   def bounding_rect(self):
     return self._rect
+
+  @property
+  def bounding_rect_with_snow(self):
+    # This is the rect snowflakes check against. I currently don't want the
+    # player to collide with snow piles so they have to be separate.
+    return self._rect.union(self._snowpile.bounding_rect)
 
 
 class Ground(world.Thing):
@@ -43,6 +56,7 @@ class Ground(world.Thing):
     self._image = None
     self._viewpoint_pos = initial_viewpoint_pos
     self._width = 1000
+    self._snowpile = snow.spawn_snowpile(pygame.Rect(0, y, 5000, 1))
 
   def load(self, image_path):
     loaded_image = pygame.image.load(image_path)
@@ -57,11 +71,20 @@ class Ground(world.Thing):
     while draw_pos.x < viewpoint_pos.x + viewpoint_width:
       screen.blit(self._image, draw_pos)
       draw_pos.x += self._image.get_width()
+    self._snowpile.draw(screen, viewpoint_pos)
 
   @property
   def bounding_rect(self):
     # Make the ground be very thick and basically infinite in both directions.
     return pygame.Rect(-10000000, self._pos.y, 200000000, 10000)
+
+  @property
+  def bounding_rect_with_snow(self):
+    return self.bounding_rect
+
+  @property
+  def snowpile(self):
+    return self._snowpile
 
 
 def random_obstacle(bounds):
