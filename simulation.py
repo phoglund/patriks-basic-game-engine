@@ -67,7 +67,7 @@ class Simulation(object):
     self._snowfall.draw(self._screen, self._viewpoint_pos)
 
     self._debug_panel.debugged_values = {'piles': len(self._snowfall.snow_piles),
-                                         'active': len(self._snowfall.snowflakes) / 2,
+                                         'active': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
                                          'player_y': '%.1f' % self._player.at.y}
     self._debug_panel.draw(self._screen, self._viewpoint_pos)

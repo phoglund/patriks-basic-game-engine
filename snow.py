@@ -26,6 +26,32 @@ DOWN_RIGHT = pygame.math.Vector2(FALL_SPEED, FALL_SPEED)
 WHITE = pygame.Color(255, 255, 255)
 
 
+class FastPosArray(object):
+
+  def __init__(self):
+    self._positions = array.array('f')
+
+  @property
+  def positions(self):
+    return ((self._positions[i], self._positions[i + 1])
+            for i in range(0, len(self._positions), 2))
+
+  def num_positions(self):
+    return int(len(self._positions) / 2)
+
+  def append(self, x, y):
+    self._positions.append(x)
+    self._positions.append(y)
+
+  def write_add(self, index, x, y):
+    self._positions[index * 2] += x
+    self._positions[index * 2 + 1] += y
+    return self._positions[index * 2: index * 2 + 2]
+
+  def delete(self, index):
+    del self._positions[index * 2: index * 2 + 2]
+
+
 class Snowfall(world.Drawable):
 
   _snowflake_progress = 0.5
@@ -33,7 +59,8 @@ class Snowfall(world.Drawable):
   _speed = DOWN_LEFT
 
   def __init__(self):
-    self._snowflakes = array.array('f')
+    # Each snowflake has two floats, one for x and one for y.
+    self._snowflakes = FastPosArray()
     self._snow_piles = []
 
   @property
@@ -45,10 +72,9 @@ class Snowfall(world.Drawable):
     return self._snow_piles
 
   def draw(self, screen, viewpoint_pos):
-    for i in range(0, len(self._snowflakes), 2):
-      x = self._snowflakes[i] - viewpoint_pos.x
-      y = self._snowflakes[i + 1] - viewpoint_pos.y
-      screen.set_at((int(x), int(y)), WHITE)
+    for x, y in self._snowflakes.positions:
+      screen.set_at((int(x - viewpoint_pos.x),
+                     int(y - viewpoint_pos.y)), WHITE)
 
     for pile in self._snow_piles:
       pile.draw(screen, viewpoint_pos)
@@ -56,20 +82,13 @@ class Snowfall(world.Drawable):
   def spawn_snowflakes(self):
     Snowfall.tick_snowflake_angle()
     for _ in range(10):
-      # TODO: this way of representing snowflakes is way faster but pretty
-      # ugly. Find some way of maybe restoring the Snowflake abstraction
-      # or at least make this look a bit nicer.
-      x = 200 + random.random() * 1000
-      y = 0
-      self._snowflakes.append(x)
-      self._snowflakes.append(y)
+      self._snowflakes.append(x=200 + random.random() * 1000, y=0)
 
   def move_snow(self, obstacles, time_fraction):
     to_delete = []
-    for i in range(0, len(self._snowflakes), 2):
-      self._snowflakes[i] += Snowfall._speed.x * time_fraction
-      self._snowflakes[i + 1] += Snowfall._speed.y * time_fraction
-      x, y = self._snowflakes[i:i + 2]
+    delta = Snowfall._speed * time_fraction
+    for i in range(self._snowflakes.num_positions()):
+      x, y = self._snowflakes.write_add(i, x=delta.x, y=delta.y)
       merged_with_snowpile = self._handle_snowpile_collisions(
           x, y, time_fraction)
       if merged_with_snowpile:
@@ -82,7 +101,7 @@ class Snowfall(world.Drawable):
 
     # Sweep all the resting snowflakes we marked above.
     for index in sorted(to_delete, reverse=True):
-      del self._snowflakes[index:index + 2]
+      self._snowflakes.delete(index)
 
   def _handle_snowpile_collisions(self, x, y, time_fraction):
     for pile in self._snow_piles:
