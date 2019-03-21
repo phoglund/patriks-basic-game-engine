@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import array
 import math
 import pygame
 import random
 
+import arrays
 import world
 
 
@@ -24,32 +24,6 @@ FALL_SPEED = 5
 DOWN_LEFT = pygame.math.Vector2(-FALL_SPEED, FALL_SPEED)
 DOWN_RIGHT = pygame.math.Vector2(FALL_SPEED, FALL_SPEED)
 WHITE = pygame.Color(255, 255, 255)
-
-
-class FastPosArray(object):
-
-  def __init__(self):
-    self._positions = array.array('f')
-
-  @property
-  def positions(self):
-    return ((self._positions[i], self._positions[i + 1])
-            for i in range(0, len(self._positions), 2))
-
-  def num_positions(self):
-    return int(len(self._positions) / 2)
-
-  def append(self, x, y):
-    self._positions.append(x)
-    self._positions.append(y)
-
-  def write_add(self, index, x, y):
-    self._positions[index * 2] += x
-    self._positions[index * 2 + 1] += y
-    return self._positions[index * 2: index * 2 + 2]
-
-  def delete(self, index):
-    del self._positions[index * 2: index * 2 + 2]
 
 
 class Snowfall(world.Drawable):
@@ -60,7 +34,7 @@ class Snowfall(world.Drawable):
 
   def __init__(self):
     # Each snowflake has two floats, one for x and one for y.
-    self._snowflakes = FastPosArray()
+    self._snowflakes = arrays.FastPosArray()
     self._snow_piles = []
 
   @property
