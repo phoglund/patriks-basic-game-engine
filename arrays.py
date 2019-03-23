@@ -17,6 +17,8 @@ import unittest
 import array
 
 
+# Impl note: Make this one a proper collections.abc.Sequence subclass if it
+# gets longer than ~80 lines. This is fine for now.
 class FastPosArray(object):
   """A fancy array that stores sets of 2 floats next to each other.
 
@@ -28,7 +30,7 @@ class FastPosArray(object):
     self._positions = array.array('f')
 
   @property
-  def positions(self):
+  def all_positions(self):
     return ((self._positions[i], self._positions[i + 1])
             for i in range(0, len(self._positions), 2))
 

@@ -58,6 +58,7 @@ class Simulation(object):
     self._snowfall.spawn_snowflakes()
     self._snowfall.move_snow(self._obstacles, time_fraction)
     self._move_viewpoint(self._player.at)
+    self._control_world()
 
   def draw(self):
     self._player.draw(self._screen, self._viewpoint_pos)
@@ -66,9 +67,9 @@ class Simulation(object):
 
     self._snowfall.draw(self._screen, self._viewpoint_pos)
 
-    self._debug_panel.debugged_values = {'active': self._snowfall.snowflakes.num_positions(),
+    self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
-                                         'player_y': '%.1f' % self._player.at.y}
+                                         'spawn_rate': '%d' % self._snowfall.spawn_rate}
     self._debug_panel.draw(self._screen, self._viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
@@ -80,3 +81,11 @@ class Simulation(object):
       self._viewpoint_pos.y = self._size.y * 0.1
     if self._viewpoint_pos.x < 0:
       self._viewpoint_pos.x = 0
+
+  def _control_world(self):
+    # TODO: Don't use get_pressed, but get keys from the event queue.
+    pressed = pygame.key.get_pressed()
+    if pressed[pygame.K_p]:
+      self._snowfall.spawn_rate = max(self._snowfall.spawn_rate - 1, 0)
+    if pressed[pygame.K_o]:
+      self._snowfall.spawn_rate = self._snowfall.spawn_rate + 1

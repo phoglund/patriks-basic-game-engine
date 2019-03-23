@@ -25,7 +25,7 @@ class FastPosArrayTest(unittest.TestCase):
     array.append(3, 4)
     array.append(5, 6)
 
-    result = array.positions
+    result = array.all_positions
     self.assertEqual(next(result), (1, 2))
     self.assertEqual(next(result), (3, 4))
     self.assertEqual(next(result), (5, 6))
@@ -46,7 +46,7 @@ class FastPosArrayTest(unittest.TestCase):
 
     x1, y1 = array.write_add(0, 1, 1)
     x2, y2 = array.write_add(1, 1, 1)
-    stored = array.positions
+    stored = array.all_positions
     self.assertEqual((x1, y1), (2, 3))
     self.assertEqual(next(stored), (2, 3))
     self.assertEqual((x2, y2), (4, 5))
@@ -58,7 +58,7 @@ class FastPosArrayTest(unittest.TestCase):
     array.append(18, 19)
 
     array.delete(1)
-    result = array.positions
+    result = array.all_positions
     self.assertEqual(array.num_positions(), 1)
     self.assertEqual(next(result), (16, 17))
     with self.assertRaises(StopIteration):

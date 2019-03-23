@@ -56,6 +56,7 @@ class Ground(world.Thing):
     self._image = None
     self._viewpoint_pos = initial_viewpoint_pos
     self._width = 1000
+    # TODO: the ground snowpile doesn't work great if the ground is infinite.
     self._snowpile = snow.spawn_snowpile(pygame.Rect(0, y, 5000, 1))
 
   def load(self, image_path):
@@ -80,7 +81,7 @@ class Ground(world.Thing):
 
   @property
   def bounding_rect_with_snow(self):
-    return self.bounding_rect
+    return self.bounding_rect.union(self._snowpile.bounding_rect)
 
   @property
   def snowpile(self):

@@ -34,19 +34,20 @@ class Snowfall(world.Drawable):
 
   def __init__(self):
     self._snowflakes = arrays.FastPosArray()
+    self.spawn_rate = 10
 
   @property
   def snowflakes(self):
     return self._snowflakes
 
   def draw(self, screen, viewpoint_pos):
-    for x, y in self._snowflakes.positions:
+    for x, y in self._snowflakes.all_positions:
       screen.set_at((int(x - viewpoint_pos.x),
                      int(y - viewpoint_pos.y)), WHITE)
 
   def spawn_snowflakes(self):
     Snowfall.tick_snowflake_angle()
-    for _ in range(10):
+    for _ in range(self.spawn_rate):
       self._snowflakes.append(x=200 + random.random() * 1000, y=0)
 
   def move_snow(self, obstacles, time_fraction):
@@ -80,10 +81,10 @@ class Snowfall(world.Drawable):
     cls._snowflake_progress += cls._progress_delta
     if cls._snowflake_progress >= 1.0:
       cls._snowflake_progress = 1.0
-      cls._progress_delta = -0.01
+      cls._progress_delta = -0.02
     if cls._snowflake_progress <= 0.0:
       cls._snowflake_progress = 0.0
-      cls._progress_delta = 0.01
+      cls._progress_delta = 0.02
 
     cls._speed = DOWN_LEFT.lerp(DOWN_RIGHT, cls._snowflake_progress)
 
@@ -100,7 +101,7 @@ class Snowfall(world.Drawable):
 # the height of the nearest column somewhat.
 
 # Total snowpile width = WIDTH_PER_COLUMN * num columns.
-WIDTH_PER_COLUMN = 5
+WIDTH_PER_COLUMN = 2
 
 
 def spawn_snowpile(spawned_on: pygame.Rect):
