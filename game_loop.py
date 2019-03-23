@@ -16,6 +16,7 @@ import pygame
 import pygame.freetype
 
 import simulation
+import world_controls
 
 
 TARGET_FPS = 30.0
@@ -31,15 +32,16 @@ def demo(start_hidden):
   pygame.freetype.init()
   clock = pygame.time.Clock()
   game = simulation.Simulation(screen, pygame.math.Vector2(size), clock)
+  weather_god = world_controls.WeatherGod(game.snowfall)
 
-  running = True
-  while running:
+  while True:
     screen.fill(COLOR_BLACK)
     dt = clock.tick(TARGET_FPS)
     game.advance(dt / TARGET_FPS)
+    weather_god.handle_input_events()
     game.draw()
     pygame.display.flip()
 
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
-        running = False
+        return
