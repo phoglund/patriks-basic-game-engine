@@ -22,7 +22,7 @@ class WeatherGod(object):
     self._snowfall = world_snowfall
     self._next_change_allowed_at = 0
 
-  def handle_input_events(self):
+  def act_on_input(self, viewpoint_pos):
     if time.time() < self._next_change_allowed_at:
       return
 
@@ -37,7 +37,8 @@ class WeatherGod(object):
     button1, _, _ = pygame.mouse.get_pressed()
     if button1:
       clicked_at = pygame.mouse.get_pos()
-      self._snowfall.spawn_snowball(pygame.math.Vector2(clicked_at))
+      world_coords = pygame.math.Vector2(clicked_at) + viewpoint_pos
+      self._snowfall.spawn_snowball(world_coords)
       self._rate_limit(max_changes_per_second=2)
 
   def _rate_limit(self, max_changes_per_second):

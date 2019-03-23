@@ -38,7 +38,7 @@ def demo(start_hidden):
     screen.fill(COLOR_BLACK)
     dt = clock.tick(TARGET_FPS)
     game.advance(dt / TARGET_FPS)
-    weather_god.handle_input_events()
+    weather_god.act_on_input(game.viewpoint_pos)
     game.draw()
     pygame.display.flip()
 

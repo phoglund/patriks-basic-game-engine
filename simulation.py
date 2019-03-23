@@ -39,8 +39,8 @@ class Simulation(object):
     self._screen = screen
     self._size = size
     self._master_clock = clock
-    self._viewpoint_pos = pygame.math.Vector2(0.0, 0.0)
-    self._obstacles = _generate_level(size, self._viewpoint_pos)
+    self.viewpoint_pos = pygame.math.Vector2(0.0, 0.0)
+    self._obstacles = _generate_level(size, self.viewpoint_pos)
     start_pos = pygame.math.Vector2(size.x / 2, size.y - 100)
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
@@ -52,7 +52,7 @@ class Simulation(object):
     return self._snowfall
 
   def advance(self, time_fraction):
-    # self._background.draw(self._screen, self._viewpoint_pos)
+    # self._background.draw(self._screen, self.viewpoint_pos)
     self._player.move(time_fraction)
     for obstacle in self._obstacles:
       # TODO(phoglund): Handle collisions uniformly with snow when it comes to
@@ -64,23 +64,25 @@ class Simulation(object):
     self._move_viewpoint(self._player.at)
 
   def draw(self):
-    self._player.draw(self._screen, self._viewpoint_pos)
+    self._player.draw(self._screen, self.viewpoint_pos)
     for obstacle in self._obstacles:
-      obstacle.draw(self._screen, self._viewpoint_pos)
+      obstacle.draw(self._screen, self.viewpoint_pos)
 
-    self._snowfall.draw(self._screen, self._viewpoint_pos)
+    self._snowfall.draw(self._screen, self.viewpoint_pos)
 
+    hit, miss, _, _ = snow.Snowpile._rect_from_heights.cache_info()
     self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
-                                         'spawn_rate': '%d' % self._snowfall.spawn_rate}
-    self._debug_panel.draw(self._screen, self._viewpoint_pos)
+                                         'spawn_rate': '%d' % self._snowfall.spawn_rate,
+                                         'cache%': '(%.5f)' % (100 * hit / (hit + miss))}
+    self._debug_panel.draw(self._screen, self.viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
     # Just center on player for now, but clamp so we don't show too
     # much underground. Also don't move left of 0 since there's a
     # a bug with ground rendering I can't be bothered to fix.
-    self._viewpoint_pos = player_pos - self._size / 2
-    if self._viewpoint_pos.y > self._size.y * 0.1:
-      self._viewpoint_pos.y = self._size.y * 0.1
-    if self._viewpoint_pos.x < 0:
-      self._viewpoint_pos.x = 0
+    self.viewpoint_pos = player_pos - self._size / 2
+    if self.viewpoint_pos.y > self._size.y * 0.1:
+      self.viewpoint_pos.y = self._size.y * 0.1
+    if self.viewpoint_pos.x < 0:
+      self.viewpoint_pos.x = 0
