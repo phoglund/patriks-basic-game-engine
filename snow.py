@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import math
 import pygame
 import random
@@ -125,25 +126,27 @@ class Snowpile(world.Thing):
     self._draw_bounding_box = False
 
   def add(self, snowflake_pos):
-    # TODO: evaluate add algorithms. For now, just put the new flake in
-    # a random location in the pile.
-    # relative_pos = snowflake.at - self._bottom_left_pos
-    # column = int(relative_pos.x / WIDTH_PER_COLUMN)
-    # if column < 0 or column >= len(self._snow_heights):
+    relative_pos = snowflake_pos - self._bottom_left_pos
+    column = int(relative_pos.x / WIDTH_PER_COLUMN)
+    if column < 0 or column >= len(self._snow_heights) or snowflake_pos.y > self._bottom_left_pos.y:
       # This can happen if snowflakes hit from an angle.
-    column = random.randint(0, len(self._snow_heights) - 1)
+      column = random.randint(0, len(self._snow_heights) - 1)
 
     self._snow_heights[column] += 1
 
   @property
   def bounding_rect(self):
-    highest_column = max(self._snow_heights)
-    if highest_column < FALL_SPEED * 2:
+    return self._rect_from_heights()
+
+  @functools.lru_cache(maxsize=32)
+  def _rect_from_heights(self):
+    height = sum(self._snow_heights) / len(self._snow_heights)
+    if height < FALL_SPEED * 2:
       # Make the bounding rect big enough to catch some snowflakes.
-      highest_column = FALL_SPEED * 2
-    top_left = self._bottom_left_pos - (0, highest_column)
+      height = FALL_SPEED * 2
+    top_left = self._bottom_left_pos - (0, height)
     return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN *
-                       len(self._snow_heights), highest_column)
+                       len(self._snow_heights), height)
 
   @property
   def has_custom_collision(self):
