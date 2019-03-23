@@ -1,0 +1,50 @@
+pygame 1.9.4
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Elapsed = 1.995392 seconds
+Sat Mar 23 22:30:43 2019    /tmp/tmp67gkdcbt
+
+         4474724 function calls in 1.995 seconds
+
+   Ordered by: cumulative time
+   List reduced from 48 to 10 due to restriction <10>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    1.995    1.995 {built-in method builtins.exec}
+        1    0.000    0.000    1.995    1.995 <string>:1(<module>)
+        1    0.000    0.000    1.995    1.995 /home/patrik/dev/patriks-basic-game-engine/profile_simulation.py:34(advance_n_steps)
+      100    0.001    0.000    1.995    0.020 /home/patrik/dev/patriks-basic-game-engine/simulation.py:54(advance)
+      100    0.023    0.000    1.988    0.020 /home/patrik/dev/patriks-basic-game-engine/snow.py:61(move_snow)
+    34754    0.179    0.000    1.947    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:75(_handle_snowflake_collision)
+   724900    0.453    0.000    1.390    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:138(bounding_rect)
+   690146    0.216    0.000    0.940    0.000 /home/patrik/dev/patriks-basic-game-engine/obstacles.py:43(bounding_rect_with_snow)
+   724900    0.903    0.000    0.903    0.000 {built-in method builtins.max}
+    34754    0.020    0.000    0.752    0.000 /home/patrik/dev/patriks-basic-game-engine/obstacles.py:82(bounding_rect_with_snow)
+
+
+[Finished in 2.8s]
+
+
+pygame 1.9.4
+Hello from the pygame community. https://www.pygame.org/contribute.html
+Elapsed = 0.629814 seconds
+Sat Mar 23 22:30:17 2019    /tmp/tmpu219dplc
+
+         2955838 function calls in 0.630 seconds
+
+   Ordered by: cumulative time
+   List reduced from 49 to 10 due to restriction <10>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.630    0.630 {built-in method builtins.exec}
+        1    0.000    0.000    0.629    0.629 <string>:1(<module>)
+        1    0.000    0.000    0.629    0.629 /home/patrik/dev/patriks-basic-game-engine/profile_simulation.py:34(advance_n_steps)
+      100    0.001    0.000    0.629    0.006 /home/patrik/dev/patriks-basic-game-engine/simulation.py:54(advance)
+      100    0.018    0.000    0.623    0.006 /home/patrik/dev/patriks-basic-game-engine/snow.py:62(move_snow)
+    33990    0.164    0.000    0.590    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:76(_handle_snowflake_collision)
+   674563    0.181    0.000    0.320    0.000 /home/patrik/dev/patriks-basic-game-engine/obstacles.py:43(bounding_rect_with_snow)
+   708553    0.096    0.000    0.096    0.000 /home/patrik/dev/patriks-basic-game-engine/snow.py:137(bounding_rect)
+   708553    0.070    0.000    0.070    0.000 {method 'collidepoint' of 'pygame.Rect' objects}
+   708553    0.051    0.000    0.051    0.000 {method 'union' of 'pygame.Rect' objects}
+
+
+[Finished in 1.4s]
