@@ -50,6 +50,14 @@ class Snowfall(world.Drawable):
     for _ in range(self.spawn_rate):
       self._snowflakes.append(x=200 + random.random() * 1000, y=0)
 
+  def spawn_snowball(self, position):
+    # This is a pretty stupid algorithm but let's go with it for now.
+    x_center = int(position.x)
+    y_center = int(position.y)
+    for x in range(x_center - 20, x_center + 20):
+      for y in range(y_center - 20, y_center + 20):
+        self._snowflakes.append(x=x, y=y)
+
   def move_snow(self, obstacles, time_fraction):
     to_delete = []
     delta = Snowfall._speed * time_fraction
@@ -70,7 +78,7 @@ class Snowfall(world.Drawable):
       if not rect.collidepoint(x, y):
         continue
 
-      obstacle.snowpile.add(pygame.math.Vector2(x, y))
+      obstacle.snowpile.add(snowflake_pos=pygame.math.Vector2(x, y))
       return True
 
     # Did not collide with anything.

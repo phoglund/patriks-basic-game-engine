@@ -20,7 +20,6 @@ class WeatherGod(object):
 
   def __init__(self, world_snowfall):
     self._snowfall = world_snowfall
-    self._max_changes_per_second = 10
     self._next_change_allowed_at = 0
 
   def handle_input_events(self):
@@ -30,10 +29,16 @@ class WeatherGod(object):
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_o]:
       self._snowfall.spawn_rate = max(self._snowfall.spawn_rate - 1, 0)
-      self._rate_limit()
+      self._rate_limit(max_changes_per_second=10)
     if pressed[pygame.K_p]:
       self._snowfall.spawn_rate = self._snowfall.spawn_rate + 1
-      self._rate_limit()
+      self._rate_limit(max_changes_per_second=10)
 
-  def _rate_limit(self):
-    self._next_change_allowed_at = time.time() + 1.0 / self._max_changes_per_second
+    button1, _, _ = pygame.mouse.get_pressed()
+    if button1:
+      clicked_at = pygame.mouse.get_pos()
+      self._snowfall.spawn_snowball(pygame.math.Vector2(clicked_at))
+      self._rate_limit(max_changes_per_second=2)
+
+  def _rate_limit(self, max_changes_per_second):
+    self._next_change_allowed_at = time.time() + 1.0 / max_changes_per_second
