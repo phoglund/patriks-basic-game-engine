@@ -51,6 +51,10 @@ class Simulation(object):
   def snowfall(self):
     return self._snowfall
 
+  @property
+  def snowpiles(self):
+    return (obstacle.snowpile for obstacle in self._obstacles)
+
   def advance(self, time_fraction):
     # self._background.draw(self._screen, self.viewpoint_pos)
     self._player.move(time_fraction)
@@ -59,7 +63,7 @@ class Simulation(object):
       # passing time_fraction.
       self._player.collision_adjust(obstacle)
 
-    self._snowfall.spawn_snowflakes()
+    self._snowfall.spawn_snowflakes(self.snowpiles)
     self._snowfall.move_snow(self._obstacles, time_fraction)
     self._move_viewpoint(self._player.at)
 
