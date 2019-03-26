@@ -150,7 +150,18 @@ class Snowpile(world.Thing):
       self._snow_heights[column] -= drift_count
       left_wind = Snowfall.speed.x < 0
       if left_wind:
-        self._snow_heights[column - 1] += drift_count
+        while drift_count > 0 and column >= 0:
+          diff = self._snow_heights[column] - self._snow_heights[column - 1]
+          if diff > 5:
+            column -= 1
+            continue
+          withdraw = min(drift_count, diff)
+          self._snow_heights[column - 1] += withdraw
+          drift_count -= withdraw
+          column -= 1
+        if drift_count > 0:
+          self._snow_heights[0] += drift_count
+          return self._bleed_snowflakes_off_side(0, spawn_x=-5)
       else:
         self._snow_heights[column + 1] += drift_count
       return []
