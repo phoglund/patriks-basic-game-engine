@@ -144,15 +144,15 @@ class Snowpile(world.Thing):
       return self._bleed_snowflakes_off_side(column, spawn_x=self.bounding_rect.width + 5)
     else:
       diff = self._snow_heights[column] - self._snow_heights[column - 1]
-      if diff < 5:
+      if diff < 3:
         return []
       drift_count = random.randint(1, int(diff / 2))
       self._snow_heights[column] -= drift_count
-      left_wind = Snowfall.speed.x < 0
-      if left_wind:
+      left_side = column < len(self._snow_heights) / 2
+      if left_side:
         while drift_count > 0 and column >= 0:
           diff = self._snow_heights[column] - self._snow_heights[column - 1]
-          if diff > 5:
+          if diff > 3:
             column -= 1
             continue
           withdraw = min(drift_count, diff)
@@ -163,14 +163,26 @@ class Snowpile(world.Thing):
           self._snow_heights[0] += drift_count
           return self._bleed_snowflakes_off_side(0, spawn_x=-5)
       else:
-        self._snow_heights[column + 1] += drift_count
+        while drift_count > 0 and column < len(self._snow_heights) - 1:
+          diff = self._snow_heights[column] - self._snow_heights[column + 1]
+          if diff > 3:
+            column += 1
+            continue
+          withdraw = min(drift_count, diff)
+          self._snow_heights[column + 1] += withdraw
+          drift_count -= withdraw
+          column += 1
+        if drift_count > 0:
+          self._snow_heights[len(self._snow_heights) - 1] += drift_count
+          return self._bleed_snowflakes_off_side(0, spawn_x=self.bounding_rect.width + 5)
+
       return []
 
   def _bleed_snowflakes_off_side(self, column, spawn_x):
-    if self._snow_heights[column] < 5:
+    if self._snow_heights[column] < 3:
       return []
 
-    spawn_count = random.randint(1, 5)
+    spawn_count = self._snow_heights[column] - 3
     self._snow_heights[column] -= spawn_count
     topleft = pygame.math.Vector2(self.bounding_rect.topleft)
     y_off_side = lambda: random.randint(0, self.bounding_rect.height)
