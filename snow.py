@@ -31,7 +31,7 @@ class Snowfall(world.Drawable):
 
   _snowflake_progress = 0.5
   _progress_delta = 0.01
-  speed = DOWN_LEFT
+  _speed = DOWN_LEFT
 
   def __init__(self):
     self._snowflakes = arrays.FastPosArray()
@@ -46,15 +46,10 @@ class Snowfall(world.Drawable):
       screen.set_at((int(x - viewpoint_pos.x),
                      int(y - viewpoint_pos.y)), WHITE)
 
-  def spawn_snowflakes(self, snowpiles):
+  def spawn_snowflakes(self):
     Snowfall.tick_snowflake_angle()
     for _ in range(self.spawn_rate):
       self._snowflakes.append(x=200 + random.random() * 1000, y=0)
-
-    for snowpile in snowpiles:
-      spawned_snowflakes = snowpile.maybe_bleed_off_sides()
-      for flake in spawned_snowflakes:
-        self._snowflakes.append(x=flake.x, y=flake.y)
 
   def spawn_snowball(self, position):
     # This is a pretty stupid algorithm but let's go with it for now.
@@ -159,42 +154,6 @@ class Snowpile(world.Thing):
 
   def apply_custom_collision(self, player, current_speed):
     pass
-
-  def maybe_bleed_off_sides(self):
-    topleft = pygame.math.Vector2(self.bounding_rect.topleft)
-
-    def spawn_snowflake(x):
-      return topleft + pygame.math.Vector2(
-          x, random.randint(0, self.bounding_rect.height))
-
-    spawned_snowflakes = []
-    left_wind = Snowfall.speed.x < 0
-    num_columns = len(self._snow_heights)
-    drifting_columns = random.sample(
-        range(num_columns), random.randint(0, num_columns))
-    drifting_columns = [column for column in drifting_columns
-                        if self._snow_heights[column] > 0]
-    if left_wind:
-      for column in drifting_columns:
-        self._snow_heights[column] -= 1
-
-        # Special case: spawn snowflakes if they go off the side.
-        if column == 0:
-          spawned_snowflakes.append(spawn_snowflake(-5))
-        else:
-          self._snow_heights[column - 1] += 1
-    else:
-      for column in drifting_columns:
-        self._snow_heights[column] -= 1
-
-        # Special case: spawn snowflakes if they go off the side.
-        if column == 0:
-          spawned_snowflakes.append(
-              spawn_snowflake(self.bounding_rect.width + 5))
-        else:
-          self._snow_heights[column + 1] += 1
-
-    return spawned_snowflakes
 
   def draw(self, screen, viewpoint_pos):
     start = self._bottom_left_pos - viewpoint_pos
