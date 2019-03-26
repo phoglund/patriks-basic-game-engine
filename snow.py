@@ -31,11 +31,11 @@ class Snowfall(world.Drawable):
 
   _snowflake_progress = 0.5
   _progress_delta = 0.01
-  _speed = DOWN_LEFT
+  speed = DOWN_LEFT
 
   def __init__(self):
     self._snowflakes = arrays.FastPosArray()
-    self.spawn_rate = 10
+    self.spawn_rate = 40
 
   @property
   def snowflakes(self):
@@ -61,7 +61,7 @@ class Snowfall(world.Drawable):
 
   def move_snow(self, obstacles, time_fraction):
     to_delete = []
-    delta = Snowfall._speed * time_fraction
+    delta = Snowfall.speed * time_fraction
     for i in range(self._snowflakes.num_positions()):
       x, y = self._snowflakes.write_add(i, x=delta.x, y=delta.y)
       collided = self._handle_snowflake_collision(
@@ -79,7 +79,10 @@ class Snowfall(world.Drawable):
       if not rect.collidepoint(x, y):
         continue
 
-      obstacle.snowpile.add(snowflake_pos=pygame.math.Vector2(x, y))
+      drift_snow = obstacle.snowpile.add(
+          snowflake_pos=pygame.math.Vector2(x, y))
+      for flake in drift_snow:
+        self._snowflakes.append(x=flake.x, y=flake.y)
       return True
 
     # Did not collide with anything.
@@ -95,7 +98,7 @@ class Snowfall(world.Drawable):
       cls._snowflake_progress = 0.0
       cls._progress_delta = 0.02
 
-    cls._speed = DOWN_LEFT.lerp(DOWN_RIGHT, cls._snowflake_progress)
+    cls.speed = DOWN_LEFT.lerp(DOWN_RIGHT, cls._snowflake_progress)
 
 
 # Snow piles are represented like this:
@@ -128,11 +131,40 @@ class Snowpile(world.Thing):
   def add(self, snowflake_pos):
     relative_pos = snowflake_pos - self._bottom_left_pos
     column = int(relative_pos.x / WIDTH_PER_COLUMN)
-    if column < 0 or column >= len(self._snow_heights) or snowflake_pos.y > self._bottom_left_pos.y:
+    off_sides = column < 0 or column >= len(self._snow_heights)
+    if off_sides or snowflake_pos.y > self._bottom_left_pos.y:
       # This can happen if snowflakes hit from an angle.
       column = random.randint(0, len(self._snow_heights) - 1)
 
     self._snow_heights[column] += 1
+
+    if column == 0:
+      return self._bleed_snowflakes_off_side(column, spawn_x=-5)
+    elif column == len(self._snow_heights) - 1:
+      return self._bleed_snowflakes_off_side(column, spawn_x=self.bounding_rect.width + 5)
+    else:
+      diff = self._snow_heights[column] - self._snow_heights[column - 1]
+      if diff < 5:
+        return []
+      drift_count = random.randint(1, int(diff / 2))
+      self._snow_heights[column] -= drift_count
+      left_wind = Snowfall.speed.x < 0
+      if left_wind:
+        self._snow_heights[column - 1] += drift_count
+      else:
+        self._snow_heights[column + 1] += drift_count
+      return []
+
+  def _bleed_snowflakes_off_side(self, column, spawn_x):
+    if self._snow_heights[column] < 5:
+      return []
+
+    spawn_count = random.randint(1, 5)
+    self._snow_heights[column] -= spawn_count
+    topleft = pygame.math.Vector2(self.bounding_rect.topleft)
+    y_off_side = lambda: random.randint(0, self.bounding_rect.height)
+    return [topleft + pygame.math.Vector2(spawn_x, y_off_side())
+            for _ in range(spawn_count)]
 
   @property
   def bounding_rect(self):
