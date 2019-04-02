@@ -143,39 +143,57 @@ class Snowpile(world.Thing):
     elif column == len(self._snow_heights) - 1:
       return self._bleed_snowflakes_off_side(column, spawn_x=self.bounding_rect.width + 5)
     else:
-      diff = self._snow_heights[column] - self._snow_heights[column - 1]
-      if diff < 3:
-        return []
-      drift_count = random.randint(1, int(diff / 2))
-      self._snow_heights[column] -= drift_count
       left_side = column < len(self._snow_heights) / 2
       if left_side:
-        while drift_count > 0 and column >= 0:
-          diff = self._snow_heights[column] - self._snow_heights[column - 1]
-          if diff > 3:
-            column -= 1
-            continue
-          withdraw = min(drift_count, diff)
-          self._snow_heights[column - 1] += withdraw
-          drift_count -= withdraw
-          column -= 1
-        if drift_count > 0:
-          self._snow_heights[0] += drift_count
-          return self._bleed_snowflakes_off_side(0, spawn_x=-5)
+        return self._drift_snow_left(column)
       else:
-        while drift_count > 0 and column < len(self._snow_heights) - 1:
-          diff = self._snow_heights[column] - self._snow_heights[column + 1]
-          if diff > 3:
-            column += 1
-            continue
-          withdraw = min(drift_count, diff)
-          self._snow_heights[column + 1] += withdraw
-          drift_count -= withdraw
-          column += 1
-        if drift_count > 0:
-          self._snow_heights[len(self._snow_heights) - 1] += drift_count
-          return self._bleed_snowflakes_off_side(0, spawn_x=self.bounding_rect.width + 5)
+        return self._drift_snow_right(column)
 
+  def _drift_snow_left(self, column):
+    diff = self._snow_heights[column] - self._snow_heights[column - 1]
+    if diff < 3:
+      return []
+    drift_count = random.randint(1, int(diff / 2))
+
+    self._snow_heights[column] -= drift_count
+
+    while drift_count > 0 and column >= 0:
+      diff = self._snow_heights[column] - self._snow_heights[column - 1]
+      if diff > 3:
+        column -= 1
+        continue
+      withdraw = min(drift_count, diff)
+      self._snow_heights[column - 1] += withdraw
+      drift_count -= withdraw
+      column -= 1
+    if drift_count > 0:
+      self._snow_heights[0] += drift_count
+      return self._bleed_snowflakes_off_side(0, spawn_x=-5)
+    else:
+      return []
+
+  def _drift_snow_right(self, column):
+    diff = self._snow_heights[column] - self._snow_heights[column + 1]
+    if diff < 3:
+      return []
+    drift_count = random.randint(1, int(diff / 2))
+
+    self._snow_heights[column] -= drift_count
+
+    rightmost = len(self._snow_heights) - 1
+    while drift_count > 0 and column < rightmost:
+      diff = self._snow_heights[column] - self._snow_heights[column + 1]
+      if diff > 3:
+        column += 1
+        continue
+      withdraw = min(drift_count, diff)
+      self._snow_heights[column + 1] += withdraw
+      drift_count -= withdraw
+      column += 1
+    if drift_count > 0:
+      self._snow_heights[rightmost] += drift_count
+      return self._bleed_snowflakes_off_side(-1, spawn_x=self.bounding_rect.width + 5)
+    else:
       return []
 
   def _bleed_snowflakes_off_side(self, column, spawn_x):
