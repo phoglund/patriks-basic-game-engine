@@ -208,10 +208,10 @@ class Snowpile(world.Thing):
             for _ in range(spawn_count)]
 
   @property
+  @functools.lru_cache(maxsize=32)
   def bounding_rect(self):
     return self._rect_from_heights()
 
-  @functools.lru_cache(maxsize=32)
   def _rect_from_heights(self):
     height = sum(self._snow_heights) / len(self._snow_heights)
     if height < FALL_SPEED * 2:

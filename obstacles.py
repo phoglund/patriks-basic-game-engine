@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import os
 import pygame
 import random
@@ -41,6 +42,7 @@ class Box(world.Thing):
     return self._rect
 
   @property
+  @functools.lru_cache(maxsize=32)
   def bounding_rect_with_snow(self):
     # This is the rect snowflakes check against. I currently don't want the
     # player to collide with snow piles so they have to be separate.

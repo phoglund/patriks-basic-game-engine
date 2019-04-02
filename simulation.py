@@ -70,11 +70,9 @@ class Simulation(object):
 
     self._snowfall.draw(self._screen, self.viewpoint_pos)
 
-    hit, miss, _, _ = snow.Snowpile._rect_from_heights.cache_info()
     self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
-                                         'spawn_rate': '%d' % self._snowfall.spawn_rate,
-                                         'cache%': '(%.5f)' % (100 * hit / (hit + miss))}
+                                         'spawn_rate': '%d' % self._snowfall.spawn_rate}
     self._debug_panel.draw(self._screen, self.viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):
