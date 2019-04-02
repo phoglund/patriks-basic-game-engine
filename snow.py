@@ -141,18 +141,18 @@ class Snowpile(world.Thing):
     return self._rebalance_snowpile(around_column=column)
 
   def _rebalance_snowpile(self, around_column):
-    if around_column == 0:
-      return self._bleed_snowflakes_off_side(around_column, spawn_x=-5)
-    elif around_column == len(self._snow_heights) - 1:
-      return self._bleed_snowflakes_off_side(around_column, spawn_x=self.bounding_rect.width + 5)
+    left_side = around_column < len(self._snow_heights) / 2
+    if left_side:
+      return self._drift_snow_left(around_column)
     else:
-      left_side = around_column < len(self._snow_heights) / 2
-      if left_side:
-        return self._drift_snow_left(around_column)
-      else:
-        return self._drift_snow_right(around_column)
+      return self._drift_snow_right(around_column)
 
   def _drift_snow_left(self, column):
+    def spawn_left():
+      return self._bleed_snowflakes_off_side(0, spawn_x=-5)
+    if column == 0:
+      return spawn_left()
+
     diff = self._snow_heights[column] - self._snow_heights[column - 1]
     if diff < 3:
       return []
@@ -168,9 +168,16 @@ class Snowpile(world.Thing):
       column -= 1
 
     self._snow_heights[0] += drift_count
-    return self._bleed_snowflakes_off_side(0, spawn_x=-5)
+    return spawn_left()
 
   def _drift_snow_right(self, column):
+    rightmost = len(self._snow_heights) - 1
+
+    def spawn_right():
+      return self._bleed_snowflakes_off_side(rightmost, spawn_x=self.bounding_rect.width + 5)
+    if column == rightmost:
+      return spawn_right()
+
     diff = self._snow_heights[column] - self._snow_heights[column + 1]
     if diff < 3:
       return []
@@ -187,7 +194,7 @@ class Snowpile(world.Thing):
       column += 1
 
     self._snow_heights[rightmost] += drift_count
-    return self._bleed_snowflakes_off_side(-1, spawn_x=self.bounding_rect.width + 5)
+    return spawn_right()
 
   def _bleed_snowflakes_off_side(self, column, spawn_x):
     if self._snow_heights[column] < 3:
