@@ -127,6 +127,7 @@ class Snowpile(world.Thing):
     self._snow_heights = [0] * num_columns
     self._bottom_left_pos = bottom_left_pos
     self._draw_bounding_box = False
+    self.emit_snowflakes = True
 
   def add(self, snowflake_pos):
     relative_pos = snowflake_pos - self._bottom_left_pos
@@ -202,6 +203,10 @@ class Snowpile(world.Thing):
 
     spawn_count = self._snow_heights[column] - 3
     self._snow_heights[column] -= spawn_count
+    if not self.emit_snowflakes:
+      # Not emitting, just make 'em disappear.
+      return []
+
     topleft = pygame.math.Vector2(self.bounding_rect.topleft)
     y_off_side = lambda: random.randint(0, self.bounding_rect.height)
     return [topleft + pygame.math.Vector2(spawn_x, y_off_side())

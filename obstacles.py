@@ -61,6 +61,8 @@ class Ground(world.Thing):
     self._width = 1000
     # TODO: the ground snowpile doesn't work great if the ground is infinite.
     self._snowpile = snow.spawn_snowpile(pygame.Rect(0, y, 5000, 1))
+    # Don't try to spawn snowflakes off the ground snowpile.
+    self._snowpile.emit_snowflakes = False
 
   def load(self, image_path):
     loaded_image = pygame.image.load(image_path)
