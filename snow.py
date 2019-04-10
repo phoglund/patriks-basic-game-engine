@@ -69,9 +69,13 @@ class Snowfall(world.Drawable):
       if collided:
         to_delete.append(i)
 
-    # Sweep all the resting snowflakes we marked above.
+    # Sweep all the resting snowflakes we marked above. Go backwards
+    # so we don't invalidate earlier indices.
     for index in sorted(to_delete, reverse=True):
       self._snowflakes.delete(index)
+
+    for obstacle in obstacles:
+      obstacle.snowpile.drift_from_wind(wind)
 
   def _handle_snowflake_collision(self, obstacles, x, y, time_fraction):
     for obstacle in obstacles:
@@ -141,6 +145,19 @@ class Snowpile(world.Thing):
 
     return self._rebalance_snowpile(around_column=column)
 
+  def drift_from_wind(self, wind):
+    size = len(self._snow_heights)
+    k = random.randint(0, size)
+    columns = random.sample(range(size), k)
+
+    left_wind = wind.windspeed.x < 0
+    if left_wind:
+      for column in columns:
+        self._drift_snow_left(column)
+    else:
+      for column in columns:
+        self._drift_snow_right(column)
+
   def _rebalance_snowpile(self, around_column):
     left_side = around_column < len(self._snow_heights) / 2
     if left_side:
@@ -154,6 +171,7 @@ class Snowpile(world.Thing):
     if column == 0:
       return spawn_left()
 
+    # TODO: revisit this, why give up if diff < 3?
     diff = self._snow_heights[column] - self._snow_heights[column - 1]
     if diff < 3:
       return []
@@ -208,6 +226,8 @@ class Snowpile(world.Thing):
       return []
 
     topleft = pygame.math.Vector2(self.bounding_rect.topleft)
+
+    # TODO: y_off_side is probably wrong, emitted snow patterns look weird.
     y_off_side = lambda: random.randint(0, self.bounding_rect.height)
     return [topleft + pygame.math.Vector2(spawn_x, y_off_side())
             for _ in range(spawn_count)]
