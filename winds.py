@@ -16,6 +16,8 @@ import pygame
 import random
 import time
 
+import resources
+
 
 class Wind(object):
 
@@ -32,16 +34,35 @@ class Gust(Wind):
     super().__init__(direction)
     self._initial_windspeed = direction
     self._next_change_allowed_at = time.time()
+    self._weak_wind_sound = pygame.mixer.Sound(
+        resources.sound_path('weak_wind.wav'))
+    self._strong_wind_sound = pygame.mixer.Sound(
+        resources.sound_path('wind.wav'))
+    self._current_sound = self._weak_wind_sound
 
   def update(self):
     if time.time() < self._next_change_allowed_at:
       return
 
-    self.windspeed = self._initial_windspeed * random.randint(0, 20)
-    self._rate_limit(max_changes_per_second=1.0)
+    random_factor = random.randint(0, 20)
+    if random_factor > 10:
+      self._emit_sound(self._strong_wind_sound)
+    else:
+      self._emit_sound(self._weak_wind_sound)
+
+    self.windspeed = self._initial_windspeed * random_factor
+    self._rate_limit(max_changes_per_second=0.5)
 
   def _rate_limit(self, max_changes_per_second):
     self._next_change_allowed_at = time.time() + 1.0 / max_changes_per_second
+
+  def _emit_sound(self, sound):
+    if self._current_sound == sound:
+      return  # Already playing
+
+    self._current_sound.fadeout(1000)
+    self._current_sound = sound
+    self._current_sound.play(loops=-1, fade_ms=1000)
 
 
 class NullWind(Wind):

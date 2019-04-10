@@ -17,6 +17,7 @@ import os
 import pygame
 import random
 
+import resources
 import snow
 import world
 
@@ -104,8 +105,6 @@ def random_obstacle(bounds):
 
 
 def load_ground(y, initial_viewpoint_pos):
-  this_scripts_dir = os.path.realpath(os.path.dirname(__file__))
-
   ground = Ground(y, initial_viewpoint_pos)
-  ground.load(os.path.join(this_scripts_dir, 'images', 'snow.jpg'))
+  ground.load(resources.image_path('snow.jpg'))
   return ground

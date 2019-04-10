@@ -72,7 +72,8 @@ class Simulation(object):
 
     self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
-                                         'spawn_rate': '%d' % self._snowfall.spawn_rate}
+                                         'spawn_rate': '%d' % self._snowfall.spawn_rate,
+                                         'wind': '(%s)' % self._wind.windspeed}
     self._debug_panel.draw(self._screen, self.viewpoint_pos)
 
   def _move_viewpoint(self, player_pos):

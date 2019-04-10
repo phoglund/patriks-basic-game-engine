@@ -15,6 +15,7 @@
 import os
 import pygame
 
+import resources
 import world
 
 
@@ -41,9 +42,7 @@ class Background(world.Drawable):
 
 
 def load_background():
-  this_scripts_dir = os.path.realpath(os.path.dirname(__file__))
-
   background = Background()
   # TODO: find a new background image.
-  background.load(os.path.join(this_scripts_dir, 'images', 'mountains.jpg'))
+  background.load(resources.image_path('mountains.jpg'))
   return background

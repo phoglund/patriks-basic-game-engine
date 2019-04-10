@@ -1,0 +1,8 @@
+wind.wav: http://soundbible.com/1247-Wind.html
+Public domain
+
+weak_wind.wav: http://soundbible.com/634-Wind-Blowing.html
+Wind Blowing Sound
+Recorded by Mike Koenig 
+License: https://creativecommons.org/licenses/by/3.0/
+No changes made by me
