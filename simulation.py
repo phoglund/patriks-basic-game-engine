@@ -15,7 +15,6 @@
 import pygame
 import random
 
-import background
 import debug_panel
 import obstacles
 import player
@@ -44,7 +43,6 @@ class Simulation(object):
     self._obstacles = _generate_level(size, self.viewpoint_pos)
     start_pos = pygame.math.Vector2(size.x / 2, size.y - 100)
     self._player = player.Player(start_pos=start_pos)
-    self._background = background.load_background()
     self._snowfall = snow.Snowfall()
     self._wind = winds.Gust(direction=pygame.math.Vector2(-1, 0))
     self._debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
@@ -66,7 +64,6 @@ class Simulation(object):
     self._move_viewpoint(self._player.at)
 
   def draw(self):
-    # self._background.draw(self._screen, self.viewpoint_pos)
     self._player.draw(self._screen, self.viewpoint_pos)
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self.viewpoint_pos)
