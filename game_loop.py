@@ -45,3 +45,8 @@ def demo(start_hidden):
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         return
+      if event.type == pygame.ACTIVEEVENT and event.state == 2:
+        if event.gain:
+          game.resume()
+        else:
+          game.suspend()

@@ -76,6 +76,15 @@ class Simulation(object):
                                          'wind': '(%s)' % self._wind.windspeed}
     self._debug_panel.draw(self._screen, self.viewpoint_pos)
 
+  def suspend(self):
+    # Stop annoying things at least, like sounds.
+    self._wind.emit_sounds = False
+    pygame.mixer.pause()
+
+  def resume(self):
+    self._wind.emit_sounds = True
+    pygame.mixer.unpause()
+
   def _move_viewpoint(self, player_pos):
     # Just center on player for now, but clamp so we don't show too
     # much underground. Also don't move left of 0 since there's a

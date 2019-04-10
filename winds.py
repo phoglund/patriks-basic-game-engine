@@ -23,6 +23,7 @@ class Wind(object):
 
   def __init__(self, windspeed: pygame.math.Vector2):
     self.windspeed = windspeed
+    self.emit_sounds = True
 
   def update(self):
     pass
@@ -46,9 +47,9 @@ class Gust(Wind):
 
     random_factor = random.randint(0, 20)
     if random_factor > 10:
-      self._emit_sound(self._strong_wind_sound)
+      self._maybe_emit_sound(self._strong_wind_sound)
     else:
-      self._emit_sound(self._weak_wind_sound)
+      self._maybe_emit_sound(self._weak_wind_sound)
 
     self.windspeed = self._initial_windspeed * random_factor
     self._rate_limit(max_changes_per_second=0.5)
@@ -56,7 +57,9 @@ class Gust(Wind):
   def _rate_limit(self, max_changes_per_second):
     self._next_change_allowed_at = time.time() + 1.0 / max_changes_per_second
 
-  def _emit_sound(self, sound):
+  def _maybe_emit_sound(self, sound):
+    if not self.emit_sounds:
+      return
     if self._current_sound == sound:
       return  # Already playing
 
