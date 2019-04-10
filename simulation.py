@@ -21,6 +21,7 @@ import obstacles
 import player
 import snow
 import trampolines
+import winds
 
 
 def _generate_level(size, viewpoint_pos):
@@ -45,6 +46,7 @@ class Simulation(object):
     self._player = player.Player(start_pos=start_pos)
     self._background = background.load_background()
     self._snowfall = snow.Snowfall()
+    self._wind = winds.Gust(direction=pygame.math.Vector2(-1, 0))
     self._debug_panel = debug_panel.DebugPanel(pygame.math.Vector2(0, 0))
 
   @property
@@ -52,18 +54,19 @@ class Simulation(object):
     return self._snowfall
 
   def advance(self, time_fraction):
-    # self._background.draw(self._screen, self.viewpoint_pos)
-    self._player.move(time_fraction)
+    self._wind.update()
+    self._player.move(time_fraction, self._wind)
     for obstacle in self._obstacles:
       # TODO(phoglund): Handle collisions uniformly with snow when it comes to
       # passing time_fraction.
       self._player.collision_adjust(obstacle)
 
     self._snowfall.spawn_snowflakes()
-    self._snowfall.move_snow(self._obstacles, time_fraction)
+    self._snowfall.move_snow(self._obstacles, time_fraction, self._wind)
     self._move_viewpoint(self._player.at)
 
   def draw(self):
+    # self._background.draw(self._screen, self.viewpoint_pos)
     self._player.draw(self._screen, self.viewpoint_pos)
     for obstacle in self._obstacles:
       obstacle.draw(self._screen, self.viewpoint_pos)

@@ -18,6 +18,11 @@ from unittest import mock
 
 import obstacles
 import player
+import winds
+
+
+def move(player, time_fraction=1.0, wind=None):
+  player.move(time_fraction, wind=wind or winds.NullWind())
 
 
 def keys(pressed_keycodes):
@@ -50,7 +55,7 @@ class PlayerTest(unittest.TestCase):
   def test_player_doesnt_move_if_no_keys_pressed(self):
     o, p = make_player_on_solid_ground(14, 14)
 
-    p.move()
+    move(p)
     p.collision_adjust(o)
 
     self.assertEqual((14, 14), p.at)
@@ -61,7 +66,7 @@ class PlayerTest(unittest.TestCase):
     get_pressed.return_value = keys([pygame.K_LEFT])
     o, p = make_player_on_solid_ground(14, 14)
 
-    p.move()
+    move(p)
     p.collision_adjust(o)
 
     self.assertEqual((9, 14), p.at)
@@ -72,9 +77,9 @@ class PlayerTest(unittest.TestCase):
     get_pressed.return_value = keys([pygame.K_RIGHT])
     o, p = make_player_on_solid_ground()
 
-    p.move()
+    move(p)
     p.collision_adjust(o)
-    p.move()
+    move(p)
     p.collision_adjust(o)
 
     self.assertEqual((10, 0), p.at)
@@ -85,7 +90,7 @@ class PlayerTest(unittest.TestCase):
     get_pressed.return_value = keys([pygame.K_RIGHT, pygame.K_LEFT])
     o, p = make_player_on_solid_ground()
 
-    p.move()
+    move(p)
     p.collision_adjust(o)
 
     self.assertEqual((0, 0), p.at)
@@ -96,10 +101,17 @@ class PlayerTest(unittest.TestCase):
     get_pressed.return_value = keys([pygame.K_RIGHT])
     o, p = make_player_on_solid_ground()
 
-    p.move(time_fraction=0.5)
+    move(p, time_fraction=0.5)
     p.collision_adjust(o)
 
     self.assertEqual((2.5, 0), p.at)
+
+  def test_player_is_affected_by_wind(self):
+    o, p = make_player_on_solid_ground()
+
+    start_x = p.at.x
+    move(p, wind=winds.StaticWind(windspeed=pygame.math.Vector2(-1, 0)))
+    self.assertLess(p.at.x, start_x)
 
   def test_bounding_rect_centers_on_player_body(self):
     o, p = make_player_on_solid_ground()
@@ -115,7 +127,7 @@ class PlayerTest(unittest.TestCase):
     get_pressed.return_value = keys([pygame.K_RIGHT])
     o, p = make_player_on_solid_ground()
 
-    p.move()
+    move(p)
     p.collision_adjust(o)
 
     b = p.bounding_rect
@@ -127,10 +139,10 @@ class PlayerTest(unittest.TestCase):
   def test_jumping_player_goes_up(self, get_pressed):
     o, p = make_player_on_solid_ground(0, 400)
     get_pressed.return_value = keys([pygame.K_SPACE])
-    p.move()
+    move(p)
     p.collision_adjust(o)
     y1 = p.at.y
-    p.move()
+    move(p)
     p.collision_adjust(o)
     y2 = p.at.y
 
@@ -144,12 +156,12 @@ class PlayerTest(unittest.TestCase):
     o = make_obstacle(0, 0)
 
     get_pressed.return_value = keys([pygame.K_SPACE])
-    p.move()
+    move(p)
     p.collision_adjust(o)
     get_pressed.return_value = keys([])
 
     for _ in range(100):
-      p.move()
+      move(p)
       p.collision_adjust(o)
 
     self.assertEqual(p.at, (0, p.bounding_rect.y / 2))
@@ -160,7 +172,7 @@ class PlayerTest(unittest.TestCase):
     o = make_obstacle(0, 400)
 
     for _ in range(200):
-      p.move()
+      move(p)
       p.collision_adjust(o)
 
     self.assertEqual(p.bounding_rect.bottom, 400,
@@ -174,7 +186,7 @@ class PlayerTest(unittest.TestCase):
     o = make_obstacle(0, 400, 20)
 
     get_pressed.return_value = keys([pygame.K_LEFT])
-    p.move()
+    move(p)
     p.collision_adjust(o)
 
     self.assertAlmostEqual(p.bounding_rect.bottom, 418, delta=1)

@@ -59,9 +59,9 @@ class Snowfall(world.Drawable):
       for y in range(y_center - 20, y_center + 20):
         self._snowflakes.append(x=x, y=y)
 
-  def move_snow(self, obstacles, time_fraction):
+  def move_snow(self, obstacles, time_fraction, wind):
     to_delete = []
-    delta = Snowfall.speed * time_fraction
+    delta = (Snowfall.speed + wind.windspeed) * time_fraction
     for i in range(self._snowflakes.num_positions()):
       x, y = self._snowflakes.write_add(i, x=delta.x, y=delta.y)
       collided = self._handle_snowflake_collision(

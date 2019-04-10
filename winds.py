@@ -1,4 +1,4 @@
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,33 +13,44 @@
 # limitations under the License.
 
 import pygame
+import random
 import time
 
 
-class WeatherGod(object):
+class Wind(object):
 
-  def __init__(self, world_snowfall):
-    self._snowfall = world_snowfall
+  def __init__(self, windspeed: pygame.math.Vector2):
+    self.windspeed = windspeed
+
+  def update(self):
+    pass
+
+
+class Gust(Wind):
+
+  def __init__(self, direction: pygame.math.Vector2):
+    super().__init__(direction)
+    self._initial_windspeed = direction
     self._next_change_allowed_at = time.time()
 
-  def act_on_input(self, viewpoint_pos):
+  def update(self):
     if time.time() < self._next_change_allowed_at:
       return
 
-    pressed = pygame.key.get_pressed()
-    if pressed[pygame.K_o]:
-      self._snowfall.spawn_rate = max(self._snowfall.spawn_rate - 1, 0)
-      self._rate_limit(max_changes_per_second=10)
-    if pressed[pygame.K_p]:
-      self._snowfall.spawn_rate = self._snowfall.spawn_rate + 1
-      self._rate_limit(max_changes_per_second=10)
-
-    button1, _, _ = pygame.mouse.get_pressed()
-    if button1:
-      clicked_at = pygame.mouse.get_pos()
-      world_coords = pygame.math.Vector2(clicked_at) + viewpoint_pos
-      self._snowfall.spawn_snowball(world_coords)
-      self._rate_limit(max_changes_per_second=2)
+    self.windspeed = self._initial_windspeed * random.randint(0, 20)
+    self._rate_limit(max_changes_per_second=1.0)
 
   def _rate_limit(self, max_changes_per_second):
     self._next_change_allowed_at = time.time() + 1.0 / max_changes_per_second
+
+
+class NullWind(Wind):
+
+  def __init__(self):
+    super().__init__(windspeed=pygame.math.Vector2(0, 0))
+
+
+class StaticWind(Wind):
+
+  def __init__(self, windspeed):
+    super().__init__(windspeed)

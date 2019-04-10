@@ -17,6 +17,7 @@ import pygame
 
 import jump
 import speech_bubble
+import winds
 import world
 
 
@@ -50,8 +51,9 @@ class Player(world.Thing):
     x, y = self._position
     return pygame.Rect(x - width / 2, y - height / 2, width, height)
 
-  def move(self, time_fraction: float=1.0):
+  def move(self, time_fraction: float, wind):
     self._speed = self._player_speed() * time_fraction
+    self._speed += wind.windspeed * 0.1  # Absorb some wind.
 
     self._position += self._speed
 
