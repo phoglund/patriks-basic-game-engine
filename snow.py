@@ -16,9 +16,11 @@ import functools
 import math
 import pygame
 import random
+import time
 
 import arrays
 import world
+import winds
 
 
 FALL_SPEED = 5
@@ -75,7 +77,9 @@ class Snowfall(world.Drawable):
       self._snowflakes.delete(index)
 
     for obstacle in obstacles:
-      obstacle.snowpile.drift_from_wind(wind)
+      drift_snow = obstacle.snowpile.drift_from_wind(wind)
+      for flake in drift_snow:
+        self._snowflakes.append(x=flake.x, y=flake.y)
 
   def _handle_snowflake_collision(self, obstacles, x, y, time_fraction):
     for obstacle in obstacles:
@@ -130,7 +134,9 @@ class Snowpile(world.Thing):
   def __init__(self, num_columns, bottom_left_pos: pygame.math.Vector2):
     self._snow_heights = [0] * num_columns
     self._bottom_left_pos = bottom_left_pos
-    self._draw_bounding_box = False
+    self._draw_bounding_box = True
+    self._estimated_height = 10
+    self._next_bounds_update = time.time()
     self.emit_snowflakes = True
 
   def add(self, snowflake_pos):
@@ -142,21 +148,38 @@ class Snowpile(world.Thing):
       column = random.randint(0, len(self._snow_heights) - 1)
 
     self._snow_heights[column] += 1
+    self._maybe_estimate_height()
 
     return self._rebalance_snowpile(around_column=column)
 
+  # TODO: unify with rebalancing, implement right drifting
   def drift_from_wind(self, wind):
+    if not self.emit_snowflakes:
+      # TODO: drifting looks weird on the ground, figure out what to do here.
+      return []
+
+    # Stronger wind = affect more of the snowpile.
     size = len(self._snow_heights)
-    k = random.randint(0, size)
+    force_percentage = wind.windspeed.length() / winds.MAX_POSSIBLE_MAGNITUDE
+    k = random.randint(0, int(size * force_percentage))
     columns = random.sample(range(size), k)
 
     left_wind = wind.windspeed.x < 0
+    dislodged_flakes = int(10 * force_percentage)
+    to_emit = 0
     if left_wind:
       for column in columns:
-        self._drift_snow_left(column)
+        self._snow_heights[column] -= dislodged_flakes
+        to_emit += dislodged_flakes
+        if self._snow_heights[column] < 0:
+          to_emit -= self._snow_heights[column]
+          self._snow_heights[column] = 0
+      self._snow_heights[0] += to_emit
+      return self._bleed_snowflakes_off_side(0, spawn_x=-5)
     else:
-      for column in columns:
-        self._drift_snow_right(column)
+      pass
+
+    return []
 
   def _rebalance_snowpile(self, around_column):
     left_side = around_column < len(self._snow_heights) / 2
@@ -227,24 +250,30 @@ class Snowpile(world.Thing):
 
     topleft = pygame.math.Vector2(self.bounding_rect.topleft)
 
-    # TODO: y_off_side is probably wrong, emitted snow patterns look weird.
     y_off_side = lambda: random.randint(0, self.bounding_rect.height)
     return [topleft + pygame.math.Vector2(spawn_x, y_off_side())
             for _ in range(spawn_count)]
 
-  @property
-  @functools.lru_cache(maxsize=32)
-  def bounding_rect(self):
-    return self._rect_from_heights()
-
-  def _rect_from_heights(self):
-    height = sum(self._snow_heights) / len(self._snow_heights)
+  @functools.lru_cache()
+  def _make_rect(self, height):
     if height < FALL_SPEED * 2:
       # Make the bounding rect big enough to catch some snowflakes.
       height = FALL_SPEED * 2
     top_left = self._bottom_left_pos - (0, height)
     return pygame.Rect(top_left.x, top_left.y, WIDTH_PER_COLUMN *
                        len(self._snow_heights), height)
+
+  def _maybe_estimate_height(self):
+    if time.time() < self._next_bounds_update:
+      return
+
+    self._estimated_height = sum(
+        self._snow_heights) / len(self._snow_heights)
+    self._next_bounds_update = time.time() + 5
+
+  @property
+  def bounding_rect(self):
+    return self._make_rect(self._estimated_height)
 
   @property
   def has_custom_collision(self):

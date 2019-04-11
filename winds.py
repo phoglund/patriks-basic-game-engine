@@ -19,6 +19,9 @@ import time
 import resources
 
 
+MAX_POSSIBLE_MAGNITUDE = 100
+
+
 class Wind(object):
 
   def __init__(self, windspeed: pygame.math.Vector2):
@@ -33,7 +36,7 @@ class Gust(Wind):
 
   def __init__(self, direction: pygame.math.Vector2):
     super().__init__(direction)
-    self._initial_windspeed = direction
+    self._initial_windspeed = direction.normalize()
     self._next_change_allowed_at = time.time()
     self._weak_wind_sound = pygame.mixer.Sound(
         resources.sound_path('weak_wind.wav'))
@@ -45,7 +48,7 @@ class Gust(Wind):
     if time.time() < self._next_change_allowed_at:
       return
 
-    random_factor = random.randint(0, 20)
+    random_factor = random.randint(0, MAX_POSSIBLE_MAGNITUDE / 5)
     if random_factor > 10:
       self._maybe_emit_sound(self._strong_wind_sound)
     else:
