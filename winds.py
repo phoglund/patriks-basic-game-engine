@@ -19,7 +19,7 @@ import time
 import resources
 
 
-MAX_POSSIBLE_MAGNITUDE = 100
+MAX_POSSIBLE_MAGNITUDE = 200
 
 
 class Wind(object):
@@ -49,7 +49,7 @@ class Gust(Wind):
       return
 
     random_factor = random.randint(0, MAX_POSSIBLE_MAGNITUDE / 5)
-    if random_factor > 10:
+    if random_factor > MAX_POSSIBLE_MAGNITUDE / 2:
       self._maybe_emit_sound(self._strong_wind_sound)
     else:
       self._maybe_emit_sound(self._weak_wind_sound)

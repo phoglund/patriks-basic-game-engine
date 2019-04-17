@@ -15,6 +15,7 @@
 import pygame
 import pygame.freetype
 
+import game_over
 import simulation
 import world_controls
 
@@ -33,6 +34,7 @@ def demo(start_hidden):
   clock = pygame.time.Clock()
   game = simulation.Simulation(screen, pygame.math.Vector2(size), clock)
   weather_god = world_controls.WeatherGod(game.snowfall)
+  you_died = game_over.GameOverText()
 
   while True:
     screen.fill(COLOR_BLACK)
@@ -40,6 +42,8 @@ def demo(start_hidden):
     game.advance(dt / TARGET_FPS)
     weather_god.act_on_input(game.viewpoint_pos)
     game.draw()
+    if game.game_ended:
+      you_died.draw(screen, game.viewpoint_pos)
     pygame.display.flip()
 
     for event in pygame.event.get():

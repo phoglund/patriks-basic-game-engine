@@ -134,7 +134,7 @@ class Snowpile(world.Thing):
   def __init__(self, num_columns, bottom_left_pos: pygame.math.Vector2):
     self._snow_heights = [0] * num_columns
     self._bottom_left_pos = bottom_left_pos
-    self._draw_bounding_box = True
+    self._draw_bounding_box = False
     self._estimated_height = 10
     self._next_bounds_update = time.time()
     self.emit_snowflakes = True
