@@ -43,6 +43,25 @@ class ObstacleKdTreeTest(unittest.TestCase):
                           '(50, 100) goes into the left subtree and '
                           '(200, 100) into the right subtree.'))
 
+  def test_insert_switches_between_x_and_y_axis(self):
+    obstacles = (obstacle(1, 20), obstacle(2, 19), obstacle(3, 18), 
+                 obstacle(4, 17), obstacle(5, 16), obstacle(6, 15))
+    tree = kdtree.obstacle_kd_tree(obstacles, depth=0)
+    result = kdtree.walk_topleft_bfs(tree)
+    # Sketch of the expected tree:
+    # 
+    #               (4, 17)
+    #    (2, 19)               (5, 16)
+    # (3, 18)  (1, 20)    (6, 15)      None
+    left = ((2, 19), ((3, 18), (), ()), ((1, 20), (), ()))
+    right = ((5, 16), ((6, 15), (), ()), ())
+    expected = ((4, 17), left, right)
+    self.assertEqual(result, expected, 
+                     msg=('See expected tree. Notably, (3, 18 is left of '
+                          '(2, 19) because 18 < 19; at depth = 1 we are '
+                          'looking at y and not x as in the level above.'))
+
+
 
 
 if __name__ == '__main__':
