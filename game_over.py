@@ -23,14 +23,14 @@ BACKGROUND_COLOR = pygame.Color(0, 0, 0)
 
 class GameOverText(world.Drawable):
   def __init__(self):
-  	self._font = pygame.freetype.SysFont('Arial', 40)
-  	self._line1 = "R.I.P 2019-2019"
-  	self._line2 = "REST IN PEPERONIS"
+    self._font = pygame.freetype.SysFont('Arial', 40)
+    self._line1 = "R.I.P 2019-2019"
+    self._line2 = "REST IN PEPERONIS"
 
   def draw(self, screen, viewpoint_pos):
-  	width, height = screen.get_size()
-  	x = width / 6
-  	y = height / 2
-  	self._font.render_to(screen, (x, y), self._line1, fgcolor=TEXT_COLOR, bgcolor=BACKGROUND_COLOR)
-  	self._font.render_to(screen, (x, y + height / 6), self._line2, fgcolor=TEXT_COLOR, bgcolor=BACKGROUND_COLOR)
+    width, height = screen.get_size()
+    x = width / 6
+    y = height / 2
+    self._font.render_to(screen, (x, y), self._line1, fgcolor=TEXT_COLOR, bgcolor=BACKGROUND_COLOR)
+    self._font.render_to(screen, (x, y + height / 6), self._line2, fgcolor=TEXT_COLOR, bgcolor=BACKGROUND_COLOR)
 
