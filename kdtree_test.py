@@ -35,10 +35,25 @@ def obstacle(x, y, width=10, height=10):
 
 
 class ObstacleKdTreeTest(unittest.TestCase):
+  def test_walk_preorder_is_actually_preorder(self):
+    # Pre-order traversal: root, left, right.
+    #     (5, 6)
+    #   (3, 4)   (7, 8)
+    # (1, 2)
+    obstacles = (obstacle(1, 2), obstacle(3, 4), obstacle(5, 6), obstacle(7, 8))
+    tree = kdtree.obstacle_kd_tree(obstacles, depth=0)
+    result = [o for o in kdtree.walk_preorder(tree)]
+    self.assertEqual(len(result), 4)
+    l1, l2, root, r = obstacles
+    self.assertEqual(result[0], root)
+    self.assertEqual(result[1], l2)
+    self.assertEqual(result[2], l1)
+    self.assertEqual(result[3], r)
+
   def test_insert_partitions_on_topleft(self):
     obstacles = (obstacle(100, 100), obstacle(50, 100), obstacle(200, 100))
     tree = kdtree.obstacle_kd_tree(obstacles, depth=0)
-    result = kdtree.walk_topleft_bfs(tree)
+    result = kdtree.walk_preorder_topleft(tree)
     expected = ((100, 100), ((50, 100), (), ()), ((200, 100), (), ()))
     self.assertEqual(result, expected, 
                      msg=('depth=0, so we are splitting on x. Therefore '
@@ -50,7 +65,7 @@ class ObstacleKdTreeTest(unittest.TestCase):
     obstacles = (obstacle(1, 20), obstacle(2, 19), obstacle(3, 18), 
                  obstacle(4, 17), obstacle(5, 16), obstacle(6, 15))
     tree = kdtree.obstacle_kd_tree(obstacles)
-    result = kdtree.walk_topleft_bfs(tree)
+    result = kdtree.walk_preorder_topleft(tree)
     # Sketch of the expected tree:
     # 
     #               (4, 17)
@@ -76,7 +91,6 @@ class ObstacleKdTreeTest(unittest.TestCase):
     hits = kdtree.search(tree, (0, 101))
     result = [o.bounding_rect.topleft for o in hits]
     self.assertEqual(result, [(50, 100)])
-
 
 
 if __name__ == '__main__':

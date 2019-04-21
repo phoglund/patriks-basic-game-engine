@@ -16,6 +16,7 @@ import pygame
 import random
 
 import debug_panel
+import kdtree
 import obstacles
 import player
 import snow
@@ -30,7 +31,7 @@ def _generate_level(size, viewpoint_pos):
       y=ground_level, initial_viewpoint_pos=viewpoint_pos)
   some_trampolines = [trampolines.random_trampoline(
       ground_y=ground_level, bounds=size) for _ in range(0)]
-  return [ground] + some_obstacles + some_trampolines
+  return kdtree.obstacle_kd_tree([ground] + some_obstacles + some_trampolines)
 
 
 class Simulation(object):
@@ -56,7 +57,7 @@ class Simulation(object):
     self._wind.update()
     if not self.game_ended:
       self._player.move(time_fraction, self._wind)
-    for obstacle in self._obstacles:
+    for obstacle in kdtree.walk_preorder(self._obstacles):
       self._player.collision_adjust(obstacle)
 
     self._snowfall.spawn_snowflakes()
@@ -69,15 +70,18 @@ class Simulation(object):
   def draw(self):
     if not self.game_ended:
       self._player.draw(self._screen, self.viewpoint_pos)
-    for obstacle in self._obstacles:
+    for obstacle in kdtree.walk_preorder(self._obstacles):
       obstacle.draw(self._screen, self.viewpoint_pos)
 
     self._snowfall.draw(self._screen, self.viewpoint_pos)
 
+    kd_search_cache = kdtree.search.cache_info()
+    kd_hit_rate = float(kd_search_cache.hits) / (kd_search_cache.hits + kd_search_cache.misses)
     self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
                                          'spawn_rate': '%d' % self._snowfall.spawn_rate,
-                                         'wind': '(%s)' % self._wind.windspeed}
+                                         'wind': '(%s)' % self._wind.windspeed,
+                                         'kd search%': '%.3f' % kd_hit_rate}
     self._debug_panel.draw(self._screen, self.viewpoint_pos)
 
   def suspend(self):

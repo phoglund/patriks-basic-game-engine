@@ -19,6 +19,7 @@ import random
 import time
 
 import arrays
+import kdtree
 import world
 import winds
 
@@ -61,7 +62,7 @@ class Snowfall(world.Drawable):
       for y in range(y_center - 20, y_center + 20):
         self._snowflakes.append(x=x, y=y)
 
-  def move_snow(self, obstacles, time_fraction, wind):
+  def move_snow(self, obstacles: kdtree.Node, time_fraction, wind):
     to_delete = []
     delta = (Snowfall.speed + wind.windspeed) * time_fraction
     for i in range(self._snowflakes.num_positions()):
@@ -76,13 +77,19 @@ class Snowfall(world.Drawable):
     for index in sorted(to_delete, reverse=True):
       self._snowflakes.delete(index)
 
-    for obstacle in obstacles:
+    for obstacle in kdtree.walk_preorder(obstacles):
       drift_snow = obstacle.snowpile.drift_from_wind(wind)
       for flake in drift_snow:
         self._snowflakes.append(x=flake.x, y=flake.y)
 
   def _handle_snowflake_collision(self, obstacles, x, y, time_fraction):
-    for obstacle in obstacles:
+    # Implementation note: quantize the position to improve the hit rate for
+    # the kdtree.search lru cache. This means snowflakes sometimes float
+    # inside an obstacle, but that's ok.
+    step = 20
+    quantized_pos = (x // step * step, y // step * step)
+    candidates = kdtree.search(obstacles, pos=quantized_pos)
+    for obstacle in candidates:
       rect = obstacle.bounding_rect_with_snow
       if not rect.collidepoint(x, y):
         continue
