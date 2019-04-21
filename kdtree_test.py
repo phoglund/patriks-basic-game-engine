@@ -26,6 +26,9 @@ def obstacle(x, y, width=10, height=10):
     @property
     def bounding_rect(self):
       return self._bounding_rect
+
+    def __repr__(self):
+      return str(self._bounding_rect)
   
   rect = pygame.Rect(x, y, width, height)    
   return FakeObstacle(rect)
@@ -46,7 +49,7 @@ class ObstacleKdTreeTest(unittest.TestCase):
   def test_insert_switches_between_x_and_y_axis(self):
     obstacles = (obstacle(1, 20), obstacle(2, 19), obstacle(3, 18), 
                  obstacle(4, 17), obstacle(5, 16), obstacle(6, 15))
-    tree = kdtree.obstacle_kd_tree(obstacles, depth=0)
+    tree = kdtree.obstacle_kd_tree(obstacles)
     result = kdtree.walk_topleft_bfs(tree)
     # Sketch of the expected tree:
     # 
@@ -61,6 +64,18 @@ class ObstacleKdTreeTest(unittest.TestCase):
                           '(2, 19) because 18 < 19; at depth = 1 we are '
                           'looking at y and not x as in the level above.'))
 
+  def test_search_culls_rects_left_and_above_1(self):
+    obstacles = (obstacle(100, 100), obstacle(50, 100), obstacle(200, 100))
+    tree = kdtree.obstacle_kd_tree(obstacles)
+    hits = kdtree.search(tree, (0, 0))
+    self.assertEqual(hits, ())
+
+  def test_search_culls_rects_left_and_above_2(self):
+    obstacles = (obstacle(100, 100), obstacle(50, 100), obstacle(200, 100))
+    tree = kdtree.obstacle_kd_tree(obstacles)
+    hits = kdtree.search(tree, (0, 101))
+    result = [o.bounding_rect.topleft for o in hits]
+    self.assertEqual(result, [(50, 100)])
 
 
 

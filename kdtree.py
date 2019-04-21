@@ -20,7 +20,7 @@ import pygame
 
 def _sort_by_axis(axis):
   assert axis < 2, 'axis is either 0 = x, or 1 = y'
-  
+
   def _key(item):
     topleft = item.bounding_rect.topleft
     return topleft[axis]
@@ -42,6 +42,21 @@ def obstacle_kd_tree(obstacles, depth=0):
   return _Node(sorted_list[median], 
                obstacle_kd_tree(sorted_list[:median], depth + 1), 
                obstacle_kd_tree(sorted_list[median + 1:], depth + 1))
+
+
+def search(tree, pos, depth=0):
+  if not tree:
+    return ()
+
+  axis = depth % 2
+  current = tree.obstacle.bounding_rect.topleft
+
+  if pos[axis] < current[axis]:
+    return search(tree.left, pos, depth + 1)
+  else:
+    return ((tree.obstacle,) + 
+            search(tree.left, pos, depth + 1) + 
+            search(tree.right, pos, depth + 1))
 
 
 def walk_topleft_bfs(node):
