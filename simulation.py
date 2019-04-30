@@ -53,15 +53,15 @@ class Simulation(object):
   def snowfall(self):
     return self._snowfall
 
-  def advance(self, time_fraction):
+  def advance(self):
     self._wind.update()
     if not self.game_ended:
-      self._player.move(time_fraction, self._wind)
+      self._player.move(self._wind)
     for obstacle in kdtree.walk_preorder(self._obstacles):
       self._player.collision_adjust(obstacle)
 
     self._snowfall.spawn_snowflakes()
-    self._snowfall.move_snow(self._obstacles, time_fraction, self._wind)
+    self._snowfall.move_snow(self._obstacles, self._wind)
     self._move_viewpoint(self._player.at)
 
     if self._player.at.x < 0:
@@ -75,13 +75,14 @@ class Simulation(object):
 
     self._snowfall.draw(self._screen, self.viewpoint_pos)
 
-    kd_search_cache = kdtree.search.cache_info()
-    kd_hit_rate = float(kd_search_cache.hits) / (kd_search_cache.hits + kd_search_cache.misses)
+    kd_search_lru = kdtree.search.cache_info()
+    kd_hit_rate = float(kd_search_lru.hits) * 100 / \
+        (kd_search_lru.hits + kd_search_lru.misses + 1)
     self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
                                          'fps': '%.1f' % self._master_clock.get_fps(),
                                          'spawn_rate': '%d' % self._snowfall.spawn_rate,
                                          'wind': '(%s)' % self._wind.windspeed,
-                                         'kd search%': '%.3f' % kd_hit_rate}
+                                         'kd search': '%.2f%%' % kd_hit_rate}
     self._debug_panel.draw(self._screen, self.viewpoint_pos)
 
   def suspend(self):

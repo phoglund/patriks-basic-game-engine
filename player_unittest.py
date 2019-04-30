@@ -21,8 +21,8 @@ import player
 import winds
 
 
-def move(player, time_fraction=1.0, wind=None):
-  player.move(time_fraction, wind=wind or winds.NullWind())
+def move(player, wind=None):
+  player.move(wind=wind or winds.NullWind())
 
 
 def keys(pressed_keycodes):
@@ -94,17 +94,6 @@ class PlayerTest(unittest.TestCase):
     p.collision_adjust(o)
 
     self.assertEqual((0, 0), p.at)
-
-  @mock.patch('pygame.key.get_pressed')
-  def test_player_moves_scaled_to_time(self, get_pressed):
-
-    get_pressed.return_value = keys([pygame.K_RIGHT])
-    o, p = make_player_on_solid_ground()
-
-    move(p, time_fraction=0.5)
-    p.collision_adjust(o)
-
-    self.assertEqual((2.5, 0), p.at)
 
   def test_player_is_affected_by_wind(self):
     o, p = make_player_on_solid_ground()

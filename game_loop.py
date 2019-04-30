@@ -36,10 +36,14 @@ def demo(start_hidden):
   weather_god = world_controls.WeatherGod(game.snowfall)
   you_died = game_over.GameOverText()
 
+  time_left = 0.0
   while True:
     screen.fill(COLOR_BLACK)
     dt = clock.tick(TARGET_FPS)
-    game.advance(dt / TARGET_FPS)
+    time_left += dt / TARGET_FPS
+    while time_left > 1.0:
+      game.advance()
+      time_left -= 1.0
     weather_god.act_on_input(game.viewpoint_pos)
     game.draw()
     if game.game_ended:

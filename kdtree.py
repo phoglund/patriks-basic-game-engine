@@ -51,7 +51,7 @@ def obstacle_kd_tree(obstacles, depth=0):
               obstacle_kd_tree(sorted_list[median + 1:], depth + 1))
 
 
-@functools.lru_cache(maxsize=1024)
+@functools.lru_cache(maxsize=2048)
 def search(tree, pos):
   return _search(tree, pos, depth=0)
 
