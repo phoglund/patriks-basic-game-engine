@@ -20,6 +20,7 @@ import pygame
 
 
 class Node(collections.namedtuple('Node', 'obstacle left right')):
+
   def __repr__(self):
     return pprint.pformat(tuple(self))
 
@@ -45,9 +46,9 @@ def obstacle_kd_tree(obstacles, depth=0):
   sorted_list = sorted(obstacles, key=_sort_by_axis(axis))
   median = len(obstacles) // 2
 
-  return Node(sorted_list[median], 
-               obstacle_kd_tree(sorted_list[:median], depth + 1), 
-               obstacle_kd_tree(sorted_list[median + 1:], depth + 1))
+  return Node(sorted_list[median],
+              obstacle_kd_tree(sorted_list[:median], depth + 1),
+              obstacle_kd_tree(sorted_list[median + 1:], depth + 1))
 
 
 @functools.lru_cache(maxsize=1024)
@@ -65,8 +66,8 @@ def _search(tree, pos, depth):
   if pos[axis] < current[axis]:
     return _search(tree.left, pos, depth + 1)
   else:
-    return ((tree.obstacle,) + 
-            _search(tree.left, pos, depth + 1) + 
+    return ((tree.obstacle,) +
+            _search(tree.left, pos, depth + 1) +
             _search(tree.right, pos, depth + 1))
 
 
@@ -79,13 +80,3 @@ def walk_preorder(tree):
     yield obstacle
   for obstacle in walk_preorder(tree.right):
     yield obstacle
-
-
-def walk_preorder_topleft(node):
-  def _walk(node):
-    if not node:
-      return ()
-    topleft = node.obstacle.bounding_rect.topleft
-    return (topleft, _walk(node.left), _walk(node.right))
-  
-  return _walk(node)
