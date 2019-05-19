@@ -61,7 +61,6 @@ class Player(world.Thing):
       self._currently_saying = speech_bubble.NullSpeechBubble()
 
   def collision_adjust(self, obstacle):
-    # self._collision_adjust_snowpile(obstacle.snowpile)
     if not obstacle.bounding_rect.colliderect(self.bounding_rect):
       return
 
@@ -70,23 +69,6 @@ class Player(world.Thing):
     else:
       # Otherwise: apply the normal algorithm.
       self._back_up_until_not_colliding(obstacle)
-
-  # TODO: doesn't work.
-  def _collision_adjust_snowpile(self, snowpile):
-    if not snowpile.bounding_rect.colliderect(self.bounding_rect):
-      return
-
-    # Works a bit like the regular algorithm, but we sink more into the snow.
-    them = snowpile.bounding_rect.copy()
-    them.height -= 20
-    if them.height < 0:
-      them.height = 1
-
-    # Reverse time until we no longer collide.
-    fraction_undone = 0.0
-    while them.colliderect(self.bounding_rect) and fraction_undone < 1.0:
-      self._position -= self._speed * 0.1
-      fraction_undone += 0.1
 
   def say(self, what_to_say, duration_secs=5):
     self._currently_saying = speech_bubble.SpeechBubble(
