@@ -82,12 +82,7 @@ class Snowfall(world.Drawable):
         self._snowflakes.append(x=flake.x, y=flake.y)
 
   def _handle_snowflake_collision(self, obstacles, x, y):
-    # Implementation note: quantize the position to improve the hit rate for
-    # the kdtree.search lru cache. This means snowflakes sometimes float
-    # inside an obstacle, but that's ok.
-    step = 20
-    quantized_pos = (x // step * step, y // step * step)
-    candidates = kdtree.search(obstacles, pos=quantized_pos)
+    candidates = kdtree.quick_search(obstacles, pos=(x, y))
     for obstacle in candidates:
       rect = obstacle.bounding_rect_with_snow
       if not rect.collidepoint(x, y):
@@ -135,15 +130,23 @@ def spawn_snowpile(spawned_on: pygame.Rect):
   return Snowpile(num_columns, pygame.math.Vector2(spawned_on.topleft))
 
 
+def move_snowpile(snowpile, spawned_on: pygame.Rect):
+  # TODO: does not deal with the spawned_on rect changing size.
+  snowpile.move(pygame.math.Vector2(spawned_on.topleft))
+
+
 class Snowpile(world.Thing):
 
   def __init__(self, num_columns, bottom_left_pos: pygame.math.Vector2):
     self._snow_heights = [0] * num_columns
     self._bottom_left_pos = bottom_left_pos
-    self._draw_bounding_box = False
+    self._draw_bounding_box = True
     self._estimated_height = 10
     self._next_bounds_update = time.time()
     self.emit_snowflakes = True
+
+  def move(self, new_bottom_left_pos):
+    self._bottom_left_pos = new_bottom_left_pos
 
   def add(self, snowflake_pos):
     relative_pos = snowflake_pos - self._bottom_left_pos
@@ -261,7 +264,9 @@ class Snowpile(world.Thing):
             for _ in range(spawn_count)]
 
   @functools.lru_cache()
-  def _make_rect(self, height):
+  # Implementation note: bottom_left needs to be a parameter, or
+  # the rect doesn't move when the obstacle moves.
+  def _make_rect(self, height, bottom_left_pos_x, bottom_left_pos_y):
     if height < FALL_SPEED * 2:
       # Make the bounding rect big enough to catch some snowflakes.
       height = FALL_SPEED * 2
@@ -279,7 +284,7 @@ class Snowpile(world.Thing):
 
   @property
   def bounding_rect(self):
-    return self._make_rect(self._estimated_height)
+    return self._make_rect(self._estimated_height, self._bottom_left_pos.x, self._bottom_left_pos.y)
 
   @property
   def has_custom_collision(self):

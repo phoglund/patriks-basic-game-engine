@@ -51,8 +51,23 @@ def obstacle_kd_tree(obstacles, depth=0):
               obstacle_kd_tree(sorted_list[median + 1:], depth + 1))
 
 
-@functools.lru_cache(maxsize=2048)
 def search(tree, pos):
+  return _search(tree, pos, depth=0)
+
+
+def quick_search(tree, pos):
+  # Implementation note: quantize the position to improve the hit rate for
+  # the memoizing lru cache. The returned results could miss some obstacles
+  # if they're just outside the step, so use where we don't need 100%
+  # precision.
+  step = 20
+  x, y = pos
+  quantized_pos = (x // step * step, y // step * step)
+  return _memoized_search(tree, quantized_pos)
+
+
+@functools.lru_cache(maxsize=2048)
+def _memoized_search(tree, pos):
   return _search(tree, pos, depth=0)
 
 

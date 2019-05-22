@@ -33,7 +33,8 @@ def demo(start_hidden):
   pygame.freetype.init()
   clock = pygame.time.Clock()
   game = simulation.Simulation(screen, pygame.math.Vector2(size), clock)
-  weather_god = world_controls.WeatherGod(game.snowfall)
+  weather_control = world_controls.WeatherControl(game.snowfall)
+  world_editor = world_controls.WorldEditor(game)
   you_died = game_over.GameOverText()
 
   time_left = 0.0
@@ -42,9 +43,10 @@ def demo(start_hidden):
     dt = clock.tick(TARGET_FPS)
     time_left += dt / TARGET_FPS
     while time_left > 1.0:
+      # TODO: apply alpha factor to all speed vectors at high FPS to fix jank.
+      # https://www.gamedev.net/forums/topic/629618-proper-framerate-independent-game-loop/
       game.advance()
       time_left -= 1.0
-    weather_god.act_on_input(game.viewpoint_pos)
     game.draw()
     if game.game_ended:
       you_died.draw(screen, game.viewpoint_pos)
@@ -58,3 +60,6 @@ def demo(start_hidden):
           game.resume()
         else:
           game.suspend()
+
+      if not world_editor.act_on_input(event, game.viewpoint_pos):
+        weather_control.act_on_input(event, game.viewpoint_pos)

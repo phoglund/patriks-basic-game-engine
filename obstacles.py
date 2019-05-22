@@ -34,6 +34,10 @@ class Box(world.Thing):
     pygame.draw.rect(screen, self._color, draw_pos, 0)
     self._snowpile.draw(screen, viewpoint_pos)
 
+  def move_or_resize(self, new_rect):
+    self._rect = new_rect
+    snow.move_snowpile(self._snowpile, spawned_on=self._rect)
+
   @property
   def snowpile(self):
     return self._snowpile
