@@ -62,7 +62,7 @@ class Snowfall(world.Drawable):
       for y in range(y_center - 20, y_center + 20):
         self._snowflakes.append(x=x, y=y)
 
-  def move_snow(self, obstacles: kdtree.Node, wind):
+  def move_snow(self, obstacles: kdtree.ObstacleKdTree, wind):
     to_delete = []
     delta = (Snowfall.speed + wind.windspeed)
     for i in range(self._snowflakes.num_positions()):
@@ -76,13 +76,13 @@ class Snowfall(world.Drawable):
     for index in sorted(to_delete, reverse=True):
       self._snowflakes.delete(index)
 
-    for obstacle in kdtree.walk_preorder(obstacles):
+    for obstacle in obstacles.walk_preorder():
       drift_snow = obstacle.snowpile.drift_from_wind(wind)
       for flake in drift_snow:
         self._snowflakes.append(x=flake.x, y=flake.y)
 
   def _handle_snowflake_collision(self, obstacles, x, y):
-    candidates = kdtree.quick_search(obstacles, pos=(x, y))
+    candidates = obstacles.quick_search(pos=(x, y))
     for obstacle in candidates:
       rect = obstacle.bounding_rect_with_snow
       if not rect.collidepoint(x, y):

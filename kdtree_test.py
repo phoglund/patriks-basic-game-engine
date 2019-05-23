@@ -45,7 +45,7 @@ class ObstacleKdTreeTest(unittest.TestCase):
     obstacles = (obstacle(1, 2), obstacle(3, 4),
                  obstacle(5, 6), obstacle(7, 8))
     tree = kdtree.obstacle_kd_tree(obstacles, depth=0)
-    result = [o for o in kdtree.walk_preorder(tree)]
+    result = list(tree.walk_preorder())
     self.assertEqual(len(result), 4)
     l1, l2, root, r = obstacles
     self.assertEqual(result[0], root)
@@ -56,7 +56,7 @@ class ObstacleKdTreeTest(unittest.TestCase):
   def test_insert_partitions_on_topleft(self):
     obstacles = (obstacle(100, 100), obstacle(50, 100), obstacle(200, 100))
     tree = kdtree.obstacle_kd_tree(obstacles, depth=0)
-    result = [o.bounding_rect.topleft for o in kdtree.walk_preorder(tree)]
+    result = [o.bounding_rect.topleft for o in tree.walk_preorder()]
     expected = [(100, 100), (50, 100), (200, 100)]
     self.assertEqual(result, expected,
                      msg=('depth=0, so we are splitting on x. Therefore '
@@ -68,7 +68,7 @@ class ObstacleKdTreeTest(unittest.TestCase):
     obstacles = (obstacle(1, 20), obstacle(2, 19), obstacle(3, 18),
                  obstacle(4, 17), obstacle(5, 16), obstacle(6, 15))
     tree = kdtree.obstacle_kd_tree(obstacles)
-    result = [o.bounding_rect.topleft for o in kdtree.walk_preorder(tree)]
+    result = [o.bounding_rect.topleft for o in tree.walk_preorder()]
     # Sketch of the expected tree:
     #
     #               (4, 17)
@@ -85,13 +85,13 @@ class ObstacleKdTreeTest(unittest.TestCase):
   def test_search_culls_rects_left_and_above_1(self):
     obstacles = (obstacle(100, 100), obstacle(50, 100), obstacle(200, 100))
     tree = kdtree.obstacle_kd_tree(obstacles)
-    hits = kdtree.search(tree, (0, 0))
+    hits = tree.search((0, 0))
     self.assertEqual(hits, ())
 
   def test_search_culls_rects_left_and_above_2(self):
     obstacles = (obstacle(100, 100), obstacle(50, 100), obstacle(200, 100))
     tree = kdtree.obstacle_kd_tree(obstacles)
-    hits = kdtree.search(tree, (0, 101))
+    hits = tree.search((0, 101))
     result = [o.bounding_rect.topleft for o in hits]
     self.assertEqual(result, [(50, 100)])
 

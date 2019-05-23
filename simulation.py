@@ -53,21 +53,11 @@ class Simulation(object):
   def snowfall(self):
     return self._snowfall
 
-  # TODO: don't expose kd tree, it's an implementation detail.
-  @property
-  def obstacles(self):
-    return self._obstacles
-
-  # TODO: don't expose kd tree, it's an implementation detail.
-  def after_obstacle_moved(self):
-    all_obstacles = list(kdtree.walk_preorder(self._obstacles))
-    self._obstacles = kdtree.obstacle_kd_tree(all_obstacles)
-
   def advance(self):
     self._wind.update()
     if not self.game_ended:
       self._player.move(self._wind)
-    for obstacle in kdtree.walk_preorder(self._obstacles):
+    for obstacle in self._obstacles.walk_preorder():
       self._player.collision_adjust(obstacle)
 
     self._snowfall.spawn_snowflakes()
@@ -80,12 +70,12 @@ class Simulation(object):
   def draw(self):
     if not self.game_ended:
       self._player.draw(self._screen, self.viewpoint_pos)
-    for obstacle in kdtree.walk_preorder(self._obstacles):
+    for obstacle in self._obstacles.walk_preorder():
       obstacle.draw(self._screen, self.viewpoint_pos)
 
     self._snowfall.draw(self._screen, self.viewpoint_pos)
 
-    kd_search_lru = kdtree._memoized_search.cache_info()
+    kd_search_lru = kdtree.ObstacleKdTree._memoized_search.cache_info()
     kd_hit_rate = float(kd_search_lru.hits) * 100 / \
         (kd_search_lru.hits + kd_search_lru.misses + 1)
     self._debug_panel.debugged_values = {'flakes': self._snowfall.snowflakes.num_positions(),
@@ -103,6 +93,17 @@ class Simulation(object):
   def resume(self):
     self._wind.emit_sounds = True
     pygame.mixer.unpause()
+
+  def find_obstacle(self, at_position):
+    for obstacle in self._obstacles.search(at_position):
+      if obstacle.bounding_rect.collidepoint(at_position):
+        return obstacle
+
+    return None
+
+  def after_obstacle_moved(self):
+    all_obstacles = list(self._obstacles.walk_preorder())
+    self._obstacles = kdtree.obstacle_kd_tree(all_obstacles)
 
   def _move_viewpoint(self, player_pos):
     # Just center on player for now, but clamp so we don't show too

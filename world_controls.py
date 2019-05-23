@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import kdtree
 import pygame
 import time
 
@@ -56,19 +55,18 @@ class WorldEditor(object):
     self._dragged_obstacle = None
 
   def act_on_input(self, pygame_event, viewpoint_pos):
+    """Returns True if the event was consumed."""
     if pygame_event.type == pygame.MOUSEBUTTONDOWN and pygame_event.button == 1:
       world_coords = _to_world_coords(pygame_event.pos, viewpoint_pos)
-      obstacles = kdtree.search(self._simulation.obstacles, world_coords)
-      for obstacle in obstacles:
-        rect = obstacle.bounding_rect
-        if rect.collidepoint(world_coords):
-          self._pointer_offset = pygame.math.Vector2(
-              rect.x - world_coords.x, rect.y - world_coords.y)
-          self._dragged_obstacle = obstacle
+      obstacle = self._simulation.find_obstacle(at_position=world_coords)
+      if not obstacle:
+        return False
 
-          # Consume the event only if we click on an obstacle.
-          return True
-      return False
+      rect = obstacle.bounding_rect
+      self._pointer_offset = pygame.math.Vector2(
+          rect.x - world_coords.x, rect.y - world_coords.y)
+      self._dragged_obstacle = obstacle
+      return True
 
     if pygame_event.type == pygame.MOUSEBUTTONUP and pygame_event.button == 1:
       self._dragged_obstacle = None
